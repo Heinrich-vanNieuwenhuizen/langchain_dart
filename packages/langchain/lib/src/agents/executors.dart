@@ -67,7 +67,7 @@ class AgentExecutor extends BaseChain {
   /// Handles errors raised by the agent's output parser.
   /// The response from this handlers is passed to the agent as the observation
   /// resulting from the step.
-  final String Function(OutputParserException)? handleParsingErrors;
+  final dynamic handleParsingErrors;
 
   /// Output key for the agent's intermediate steps output.
   static const intermediateStepsOutputKey = 'intermediate_steps';

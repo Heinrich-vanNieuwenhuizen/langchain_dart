@@ -72,6 +72,8 @@ abstract class BaseActionAgent extends Agent {
         ),
     };
   }
+
+
 }
 
 /// {@template base_single_action_agent}
