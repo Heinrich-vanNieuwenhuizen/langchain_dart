@@ -17,6 +17,9 @@ environment:
 
 dependencies:
   meta: ^1.9.1
+  uuid:
+  langchain:
+  serializable:
 
 dev_dependencies:
   test: ^1.25.2
