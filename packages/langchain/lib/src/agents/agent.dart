@@ -73,6 +73,9 @@ abstract class BaseActionAgent extends Agent {
     };
   }
 
+  /// todo in dev?
+  Map<String, dynamic> toolRunLoggingKwargs() => {};
+
 
 }
 

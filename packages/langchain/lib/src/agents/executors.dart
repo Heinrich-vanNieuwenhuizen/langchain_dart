@@ -1,10 +1,7 @@
 import 'package:meta/meta.dart';
 
-import '../chains/chains.dart';
-import '../model_io/output_parsers/models/models.dart';
-import 'agent.dart';
-import 'models/models.dart';
-import 'tools/base.dart';
+import '../../langchain.dart';
+import 'agents.dart';
 import 'tools/exception.dart';
 import 'tools/invalid.dart';
 
@@ -81,6 +78,14 @@ class AgentExecutor extends BaseChain {
         if (returnIntermediateSteps) intermediateStepsOutputKey,
       };
 
+  ///  How to handle errors raised by the agent's output parser.
+  ///   Defaults to `False`, which raises the error.
+  ///   If `true`, the error will be sent back to the LLM as an observation.
+  ///   If a string, the string itself will be sent to the LLM as an observation.
+  ///   If a callable function, the function will be called with the exception
+  ///    as an argument, and the result of that function will be passed to the agent
+  ///     as an observation.
+  (int, List<(AgentStep, String)> Function()?, List<(AgentStep, String)>?) trimIntermediateSteps = (-1,null,null);
   /// Validate that tools are compatible with multi action agent.
   bool _validateMultiActionAgentTools() {
     final agent = this.agent;
@@ -209,6 +214,95 @@ class AgentExecutor extends BaseChain {
     }
     return (null, result);
   }
+
+  /// {@macro chain_type}
+  bool shouldContinue(final int iterations, final double timeElapsed) {
+    if (maxIterations != null && iterations >= maxIterations!) {
+      return false;
+    }
+    if (maxExecutionTime != null &&
+        timeElapsed >= maxExecutionTime!.inSeconds) {
+      return false;
+    }
+    return true;
+  }
+
+  // def return(
+  // self,
+  // output: AgentFinish,
+  // intermediate_steps: list,
+  // run_manager: Optional[CallbackManagerForChainRun] = None,
+  // ) -> Dict[str, Any]:
+  // if run_manager:
+  // run_manager.on_agent_finish(output, color="green", verbose=self.verbose)
+  // final_output = output.return_values
+  // if self.return_intermediate_steps:
+  // final_output["intermediate_steps"] = intermediate_steps
+  // return final_output
+
+  /// Return the final output of the agent.
+  ChainValues returnOutput(final AgentFinish output, final List<AgentStep> intermediateSteps,
+      /*CallbackManagerForChainRun? runManager*/) {
+    // if (runManager != null) {
+    //   runManager.onAgentFinish(output, "green");
+    // }
+    final finalOutput = output.returnValues;
+    if (returnIntermediateSteps) {
+      finalOutput[intermediateStepsOutputKey] = intermediateSteps;
+    }
+    return finalOutput;
+  }
+
+  /// Check if the tool is a returning tool.
+  AgentFinish? getToolReturn(final AgentStep nextStepOutput) {
+    final agentAction = nextStepOutput.action;
+    final observation = nextStepOutput.observation;
+
+    /// convert list of tools to map using name of said tool
+    final nameToToolMap = {for (final tool in agent.tools) tool.name: tool};
+    String returnValueKey = 'output';
+    if (agent.returnValues.isNotEmpty) {
+      returnValueKey = agent.returnValues.first;
+    }
+    // Invalid tools won't be in the map, so we return null.
+    if (nameToToolMap.containsKey(agentAction.tool)) {
+      final tool = nameToToolMap[agentAction.tool]!;
+      if (tool.returnDirect) {
+        return AgentFinish(
+          returnValues: {returnValueKey: observation},
+          log: '',
+        );
+      }
+    }
+    return null;
+  }
+
+  // def _prepare_intermediate_steps(
+  // self, intermediate_steps: List[Tuple[AgentAction, str]]
+  // ) -> List[Tuple[AgentAction, str]]:
+  // if (
+  // isinstance(self.trim_intermediate_steps, int)
+  // and self.trim_intermediate_steps > 0
+  // ):
+  // return intermediate_steps[-self.trim_intermediate_steps :]
+  // elif callable(self.trim_intermediate_steps):
+  // return self.trim_intermediate_steps(intermediate_steps)
+  // else:
+  // return intermediate_steps
+
+  /// Prepare the agent's intermediate steps.
+  // List<({AgentAction action, String description})> prepareIntermediateSteps(
+  //     final List<(AgentAction,String)> intermediateSteps,) {
+  //   if (trimIntermediateSteps is int && trimIntermediateSteps > 0) {
+  //     return intermediateSteps.sublist(
+  //       intermediateSteps.length - trimIntermediateSteps,
+  //     );
+  //   } else if (trimIntermediateSteps is Function) {
+  //     return trimIntermediateSteps(intermediateSteps);
+  //   } else {
+  //     return intermediateSteps;
+  //   }
+  // }
 
   @override
   String get chainType => 'agent_executor';

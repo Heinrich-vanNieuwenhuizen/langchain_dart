@@ -181,7 +181,7 @@ final class _SingleActionMockAgent extends BaseActionAgent {
   @override
   Future<List<BaseAgentAction>> plan(final AgentPlanInput input) async {
     if (throwOutputParserException) {
-      throw const OutputParserException(message: 'mock');
+      throw OutputParserException(message: 'mock');
     }
     planCount++;
     return actions;
