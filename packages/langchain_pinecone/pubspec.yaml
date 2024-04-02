@@ -18,10 +18,10 @@ environment:
 
 dependencies:
   http: ^1.1.0
-  langchain: ^0.4.2
-  meta: ^1.9.1
+  langchain_core: ^0.0.1-dev.2
+  meta: ^1.11.0
   pinecone: ^0.7.2
-  uuid: ^4.0.0
+  uuid: ^4.3.3
 
 dev_dependencies:
   test: ^1.25.2

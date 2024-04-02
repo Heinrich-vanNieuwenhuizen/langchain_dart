@@ -19,13 +19,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
         with:
           ref: "${{ github.event.pull_request.base.sha }}" # Required for pull_request_target
           fetch-depth: 0
 
       - name: Install Flutter
-        uses: subosito/flutter-action@2783a3f08e1baf891508463f8c6653c258246225
+        uses: subosito/flutter-action@1c5eb12d812966ca84680edc38353a0851c8fd56
         with:
           channel: 'stable'
 
@@ -38,7 +38,7 @@ jobs:
         run: flutter pub cache clean
 
       - name: Install Melos
-        uses: bluefireteam/melos-action@720a109b686f61979b4f9f0d14f582ab1637647e
+        uses: bluefireteam/melos-action@5a8367ec4b9942d712528c398ff3f996e03bc230
         with:
           run-bootstrap: false
 
