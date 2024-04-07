@@ -1,5 +1,6 @@
 // ignore_for_file: unused_element
 import 'package:langchain_core/chat_models.dart';
+import 'package:langchain_core/language_models.dart';
 import 'package:langchain_core/output_parsers.dart';
 import 'package:langchain_core/prompts.dart';
 import 'package:langchain_core/runnables.dart';
@@ -57,24 +58,24 @@ class _FakeOptionsChatModel
   }
 
   @override
-  Stream<ChatResult> streamFromInputStream(
-    final Stream<PromptValue> inputStream, {
+  Stream<ChatResult> stream(
+    final PromptValue input, {
     final _FakeOptionsChatModelOptions? options,
   }) {
-    return inputStream.asyncExpand(
-      (final input) {
-        final prompt = input
-            .toChatMessages()
-            .first
-            .contentAsString
-            .replaceAll(options?.stop ?? '', '')
-            .split('');
-        return Stream.fromIterable(prompt).map(
-          (final char) => ChatResult(
-            generations: [ChatGeneration(AIChatMessage(content: char))],
-          ),
-        );
-      },
+    final prompt = input
+        .toChatMessages()
+        .first
+        .contentAsString
+        .replaceAll(options?.stop ?? '', '')
+        .split('');
+    return Stream.fromIterable(prompt).map(
+      (final char) => ChatResult(
+        id: 'fake-options-chat-model',
+        output: AIChatMessage(content: char),
+        finishReason: FinishReason.stop,
+        metadata: const {},
+        usage: const LanguageModelUsage(),
+      ),
     );
   }
 

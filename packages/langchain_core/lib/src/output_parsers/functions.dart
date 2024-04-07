@@ -23,23 +23,19 @@ abstract class BaseOutputFunctionsParser<
 
   @override
   Future<O> parseResult(
-    final List<LanguageModelGeneration<ChatMessage>> result,
+    final LanguageModelResult<ChatMessage> result,
   ) async {
-    final generation = result.first;
-    return _parseChatMessage(generation.output);
+    return _parseChatMessage(result.output);
   }
 
   @override
-  Stream<O> streamFromInputStream(
-    final Stream<LanguageModelResult<ChatMessage>> inputStream, {
+  Stream<O> stream(
+    final LanguageModelResult<ChatMessage> input, {
     final CallOptions? options,
-  }) {
-    return inputStream.asyncMap((final input) async {
-      final mergedResult = _lastResult?.concat(input) ?? input;
-      _lastResult = mergedResult;
-      final generation = mergedResult.generations.first;
-      return _parseChatMessage(generation.output);
-    });
+  }) async* {
+    final mergedResult = _lastResult?.concat(input) ?? input;
+    _lastResult = mergedResult;
+    yield await _parseChatMessage(mergedResult.output);
   }
 
   Future<O> _parseChatMessage(final ChatMessage message) {
@@ -156,7 +152,7 @@ class JsonOutputFunctionsParser<CallOptions extends BaseLangChainOptions>
 
   @override
   Stream<Map<String, dynamic>> streamFromInputStream(
-    final Stream<LanguageModelResult<ChatMessage>> inputStream, {
+    final Stream<LanguageModelResult<AIChatMessage>> inputStream, {
     final CallOptions? options,
   }) {
     return super
@@ -233,7 +229,7 @@ class JsonKeyOutputFunctionsParser<T extends Object?>
 
   @override
   Stream<T> streamFromInputStream(
-    final Stream<LanguageModelResult<ChatMessage>> inputStream, {
+    final Stream<LanguageModelResult<AIChatMessage>> inputStream, {
     final BaseLangChainOptions? options,
   }) {
     return super

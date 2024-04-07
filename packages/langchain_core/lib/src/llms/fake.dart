@@ -1,3 +1,4 @@
+import '../../language_models.dart';
 import '../prompts/types.dart';
 import 'base.dart';
 import 'types.dart';
@@ -45,7 +46,7 @@ class FakeListLLM extends SimpleLLM {
 /// Fake LLM for testing.
 /// It just returns the prompt or streams it char by char.
 /// {@endtemplate}
-class FakeEchoLLM extends SimpleLLM {
+class FakeEchoLLM extends BaseLLM {
   /// {@macro fake_echo_llm}
   const FakeEchoLLM();
 
@@ -53,28 +54,36 @@ class FakeEchoLLM extends SimpleLLM {
   String get modelType => 'fake-echo';
 
   @override
-  Future<String> callInternal(
-    final String prompt, {
+  Future<LLMResult> invoke(
+    final PromptValue input, {
     final LLMOptions? options,
   }) {
-    return Future<String>.value(prompt);
+    return Future<LLMResult>.value(
+      LLMResult(
+        id: 'fake-echo',
+        output: input.toString(),
+        finishReason: FinishReason.stop,
+        metadata: const {},
+        usage: const LanguageModelUsage(),
+      ),
+    );
   }
 
   @override
-  Stream<LLMResult> streamFromInputStream(
-    final Stream<PromptValue> inputStream, {
+  Stream<LLMResult> stream(
+    final PromptValue input, {
     final LLMOptions? options,
   }) {
-    return inputStream.asyncExpand(
-      (final prompt) {
-        final promptChars = prompt.toString().split('');
-        return Stream.fromIterable(promptChars).map(
-          (final item) => LLMResult(
-            generations: [LLMGeneration(item)],
-            streaming: true,
-          ),
-        );
-      },
+    final promptChars = input.toString().split('');
+    return Stream.fromIterable(promptChars).map(
+      (final item) => LLMResult(
+        id: 'fake-echo',
+        output: item,
+        finishReason: FinishReason.unspecified,
+        metadata: const {},
+        usage: const LanguageModelUsage(),
+        streaming: true,
+      ),
     );
   }
 

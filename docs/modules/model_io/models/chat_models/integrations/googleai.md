@@ -70,8 +70,29 @@ final res = await chatModel.invoke(
     ),
   ]),
 );
-print(res.firstOutputAsString);
+print(res.output.content);
 // -> 'A Red and Green Apple'
+```
+
+## Streaming
+
+```dart
+final apiKey = Platform.environment['GOOGLEAI_API_KEY'];
+
+final promptTemplate = ChatPromptTemplate.fromTemplate(
+    'You are a helpful assistant that replies only with numbers '
+    'in order without any spaces or commas '
+    'List the numbers from 1 to {max_num}');
+
+final chatModel = ChatGoogleGenerativeAI(apiKey: apiKey);
+
+final chain = promptTemplate.pipe(chatModel).pipe(StringOutputParser());
+
+final stream = chain.stream({'max_num': '30'});
+await stream.forEach(print);
+// 1234567891011121
+// 31415161718192021222324252627282
+// 930
 ```
 
 ## Limitations

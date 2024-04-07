@@ -36,6 +36,19 @@ import 'types.dart';
 /// Mind that this list may not be up-to-date.
 /// Refer to the [documentation](https://ai.google.dev/models) for the updated list.
 ///
+/// #### Tuned models
+///
+/// You can specify a tuned model by setting the `model` parameter to
+/// `tunedModels/{your-model-name}`. For example:
+///
+/// ```dart
+/// final chatModel = ChatGoogleGenerativeAI(
+///   defaultOptions: ChatGoogleGenerativeAIOptions(
+///     model: 'tunedModels/my-tuned-model',
+///   ),
+/// );
+/// ```
+///
 /// ### Call options
 ///
 /// You can configure the parameters that will be used when calling the
@@ -48,7 +61,7 @@ import 'types.dart';
 ///
 /// ```dart
 /// final chatModel = ChatGoogleGenerativeAI(
-///   defaultOptions: const ChatGoogleGenerativeAIOptions(
+///   defaultOptions: ChatGoogleGenerativeAIOptions(
 ///     model: 'gemini-pro-vision',
 ///     temperature: 0,
 ///   ),
@@ -133,7 +146,7 @@ class ChatGoogleGenerativeAI
   /// - [ChatGoogleGenerativeAI.defaultOptions]
   ///
   /// Advance configuration options:
-  /// - `baseUrl`: the base URL to use. Defaults to Mistral AI's API URL. You can
+  /// - `baseUrl`: the base URL to use. Defaults to Google AI's API URL. You can
   ///   override this to use a different API URL, or to use a proxy.
   /// - `headers`: global headers to send with every request. You can use
   ///   this to set custom headers, or to override the default headers.
@@ -182,15 +195,20 @@ class ChatGoogleGenerativeAI
     final ChatGoogleGenerativeAIOptions? options,
   }) async {
     final id = _uuid.v4();
-    final model =
-        options?.model ?? defaultOptions.model ?? throwNullModelError();
-    final completion = await _client.generateContent(
-      modelId: model,
-      request: _generateCompletionRequest(
-        input.toChatMessages(),
-        options: options,
-      ),
+    final (model, isTuned) = _getNormalizedModel(options);
+    final request = _generateCompletionRequest(
+      input.toChatMessages(),
+      options: options,
     );
+    final completion = await (isTuned
+        ? _client.generateContentTunedModel(
+            tunedModelId: model,
+            request: request,
+          )
+        : _client.generateContent(
+            modelId: model,
+            request: request,
+          ));
     return completion.toChatResult(id, model);
   }
 
@@ -199,17 +217,17 @@ class ChatGoogleGenerativeAI
     final PromptValue input, {
     final ChatGoogleGenerativeAIOptions? options,
   }) {
-    throw UnimplementedError('Streaming is not supported yet');
-  }
+    final id = _uuid.v4();
+    final (model, isTuned) = _getNormalizedModel(options);
+    assert(!isTuned, 'Tuned models are not supported for streaming.');
+    final request = _generateCompletionRequest(
+      input.toChatMessages(),
+      options: options,
+    );
 
-  @override
-  Stream<ChatResult> streamFromInputStream(
-    final Stream<PromptValue> inputStream, {
-    final ChatGoogleGenerativeAIOptions? options,
-  }) {
-    return inputStream.asyncExpand((final input) {
-      return stream(input, options: options);
-    });
+    return _client
+        .streamGenerateContent(modelId: model, request: request)
+        .map((final completion) => completion.toChatResult(id, model));
   }
 
   /// Creates a [GenerateContentRequest] from the given input.
@@ -249,8 +267,9 @@ class ChatGoogleGenerativeAI
     final PromptValue promptValue, {
     final ChatGoogleGenerativeAIOptions? options,
   }) async {
+    final (model, _) = _getNormalizedModel(options);
     final tokens = await _client.countTokens(
-      modelId: options?.model ?? defaultOptions.model ?? throwNullModelError(),
+      modelId: model,
       request: CountTokensRequest(
         contents: promptValue.toChatMessages().toContentList(),
       ),
@@ -261,5 +280,23 @@ class ChatGoogleGenerativeAI
   /// Closes the client and cleans up any resources associated with it.
   void close() {
     _client.endSession();
+  }
+
+  /// Returns the model code to use and whether it is a tuned model.
+  (String model, bool isTuned) _getNormalizedModel(
+    final ChatGoogleGenerativeAIOptions? options,
+  ) {
+    final rawModel =
+        options?.model ?? defaultOptions.model ?? throwNullModelError();
+
+    if (!rawModel.contains('/')) {
+      return (rawModel, false);
+    }
+    final parts = rawModel.split('/');
+    return switch (parts.first) {
+      'tunedModels' => (parts.skip(1).join('/'), true),
+      'models' => (parts.skip(1).join('/'), false),
+      _ => (rawModel, false),
+    };
   }
 }
