@@ -10,6 +10,8 @@ void main(final List<String> arguments) async {
   // Runnable interface
   await _runnableInterfaceInvoke();
   await _runnableInterfaceStream();
+  await _runnableInterfaceBatch();
+  await _runnableInterfaceBatchOptions();
 
   // Runnable types
   await _runnableTypesRunnableSequence();
@@ -72,6 +74,50 @@ Future<void> _runnableInterfaceStream() async {
   // 15: !
 }
 
+Future<void> _runnableInterfaceBatch() async {
+  final openaiApiKey = Platform.environment['OPENAI_API_KEY'];
+  final model = ChatOpenAI(apiKey: openaiApiKey);
+
+  final promptTemplate = ChatPromptTemplate.fromTemplate(
+    'Tell me a joke about {topic}',
+  );
+
+  final chain = promptTemplate.pipe(model).pipe(const StringOutputParser());
+
+  final res = await chain.batch([
+    {'topic': 'bears'},
+    {'topic': 'cats'},
+  ]);
+  print(res);
+  //['Why did the bear break up with his girlfriend? Because she was too "grizzly" for him!',
+  // 'Why was the cat sitting on the computer? Because it wanted to keep an eye on the mouse!']
+}
+
+Future<void> _runnableInterfaceBatchOptions() async {
+  final openaiApiKey = Platform.environment['OPENAI_API_KEY'];
+  final model = ChatOpenAI(apiKey: openaiApiKey);
+
+  final promptTemplate = ChatPromptTemplate.fromTemplate(
+    'Tell me a joke about {topic}',
+  );
+
+  final chain = promptTemplate.pipe(model).pipe(const StringOutputParser());
+
+  final res = await chain.batch(
+    [
+      {'topic': 'bears'},
+      {'topic': 'cats'},
+    ],
+    options: [
+      const ChatOpenAIOptions(model: 'gpt-3.5-turbo', temperature: 0.5),
+      const ChatOpenAIOptions(model: 'gpt-4', temperature: 0.7),
+    ],
+  );
+  print(res);
+  //['Why did the bear break up with his girlfriend? Because he couldn't bear the relationship anymore!,',
+  // 'Why don't cats play poker in the jungle? Because there's too many cheetahs!']
+}
+
 Future<void> _runnableTypesRunnableSequence() async {
   final openaiApiKey = Platform.environment['OPENAI_API_KEY'];
   final model = ChatOpenAI(apiKey: openaiApiKey);
@@ -84,7 +130,7 @@ Future<void> _runnableTypesRunnableSequence() async {
   final chain1 = promptTemplate | model | const StringOutputParser();
   // final chain2 = promptTemplate.pipe(model).pipe(const StringOutputParser());
   // final chain3 = Runnable.fromList(
-  //   [promptTemplate, model, const StringOutputParser()],
+  //   [promptTemplate, model, StringOutputParser()],
   // );
 
   final res = await chain1.invoke({'topic': 'bears'});
@@ -105,7 +151,7 @@ Future<void> _runnableTypesRunnableMap() async {
   final promptTemplate3 = ChatPromptTemplate.fromTemplate(
     'Is {city} a good city for a {age} years old person?',
   );
-  const stringOutputParser = StringOutputParser();
+  const stringOutputParser = StringOutputParser<ChatResult>();
 
   final chain = Runnable.fromMap({
         'city': promptTemplate1 | model | stringOutputParser,

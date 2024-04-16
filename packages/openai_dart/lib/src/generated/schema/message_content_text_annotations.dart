@@ -21,7 +21,7 @@ sealed class MessageContentTextAnnotations
   /// A citation within the message that points to a specific quote from a specific File associated with the assistant or the message. Generated when the assistant uses the "retrieval" tool to search files.
   const factory MessageContentTextAnnotations.fileCitation({
     /// Always `file_citation`.
-    required MessageContentTextAnnotationsFileCitationObjectType type,
+    required String type,
 
     /// The text in the message content that needs to be replaced.
     required String text,
@@ -44,7 +44,7 @@ sealed class MessageContentTextAnnotations
   /// A URL for the file that's generated when the assistant used the `code_interpreter` tool to generate a file.
   const factory MessageContentTextAnnotations.filePath({
     /// Always `file_path`.
-    required MessageContentTextAnnotationsFilePathObjectType type,
+    required String type,
 
     /// The text in the message content that needs to be replaced.
     required String text,
@@ -63,26 +63,6 @@ sealed class MessageContentTextAnnotations
   /// Object construction from a JSON representation
   factory MessageContentTextAnnotations.fromJson(Map<String, dynamic> json) =>
       _$MessageContentTextAnnotationsFromJson(json);
-}
-
-// ==========================================
-// ENUM: MessageContentTextAnnotationsFileCitationObjectType
-// ==========================================
-
-/// Always `file_citation`.
-enum MessageContentTextAnnotationsFileCitationObjectType {
-  @JsonValue('file_citation')
-  fileCitation,
-}
-
-// ==========================================
-// ENUM: MessageContentTextAnnotationsFilePathObjectType
-// ==========================================
-
-/// Always `file_path`.
-enum MessageContentTextAnnotationsFilePathObjectType {
-  @JsonValue('file_path')
-  filePath,
 }
 
 // ==========================================

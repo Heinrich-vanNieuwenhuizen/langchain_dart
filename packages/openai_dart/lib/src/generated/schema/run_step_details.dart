@@ -20,7 +20,7 @@ sealed class RunStepDetails with _$RunStepDetails {
   /// Details of the message creation by the run step.
   const factory RunStepDetails.messageCreation({
     /// Always `message_creation`.
-    required RunStepDetailsMessageCreationObjectType type,
+    required String type,
 
     /// Details of the message creation by the run step.
     @JsonKey(name: 'message_creation')
@@ -34,7 +34,7 @@ sealed class RunStepDetails with _$RunStepDetails {
   /// Details of the tool call.
   const factory RunStepDetails.toolCalls({
     /// Always `tool_calls`.
-    required RunStepDetailsToolCallsObjectType type,
+    required String type,
 
     /// An array of tool calls the run step was involved in. These can be associated with one of three types of tools: `code_interpreter`, `retrieval`, or `function`.
     @JsonKey(name: 'tool_calls')
@@ -44,24 +44,4 @@ sealed class RunStepDetails with _$RunStepDetails {
   /// Object construction from a JSON representation
   factory RunStepDetails.fromJson(Map<String, dynamic> json) =>
       _$RunStepDetailsFromJson(json);
-}
-
-// ==========================================
-// ENUM: RunStepDetailsMessageCreationObjectType
-// ==========================================
-
-/// Always `message_creation`.
-enum RunStepDetailsMessageCreationObjectType {
-  @JsonValue('message_creation')
-  messageCreation,
-}
-
-// ==========================================
-// ENUM: RunStepDetailsToolCallsObjectType
-// ==========================================
-
-/// Always `tool_calls`.
-enum RunStepDetailsToolCallsObjectType {
-  @JsonValue('tool_calls')
-  toolCalls,
 }

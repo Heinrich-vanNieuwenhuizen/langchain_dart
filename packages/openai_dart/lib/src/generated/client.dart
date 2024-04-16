@@ -571,6 +571,39 @@ class OpenAIClient {
   }
 
   // ------------------------------------------
+  // METHOD: listFineTuningJobCheckpoints
+  // ------------------------------------------
+
+  /// List checkpoints for a fine-tuning job.
+  ///
+  /// `fineTuningJobId`: The ID of the fine-tuning job to get checkpoints for.
+  ///
+  /// `after`: Identifier for the last checkpoint ID from the previous pagination request.
+  ///
+  /// `limit`: Number of checkpoints to retrieve.
+  ///
+  /// `GET` `https://api.openai.com/v1/fine_tuning/jobs/{fine_tuning_job_id}/checkpoints`
+  Future<ListFineTuningJobCheckpointsResponse> listFineTuningJobCheckpoints({
+    required String fineTuningJobId,
+    String? after,
+    int limit = 10,
+  }) async {
+    final r = await makeRequest(
+      baseUrl: 'https://api.openai.com/v1',
+      path: '/fine_tuning/jobs/$fineTuningJobId/checkpoints',
+      method: HttpMethod.get,
+      isMultipart: false,
+      requestType: '',
+      responseType: 'application/json',
+      queryParams: {
+        if (after != null) 'after': after,
+        'limit': limit,
+      },
+    );
+    return ListFineTuningJobCheckpointsResponse.fromJson(_jsonDecode(r));
+  }
+
+  // ------------------------------------------
   // METHOD: createImage
   // ------------------------------------------
 
@@ -931,6 +964,8 @@ class OpenAIClient {
   ///
   /// `before`: A cursor for use in pagination. `before` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with obj_foo, your subsequent call can include before=obj_foo in order to fetch the previous page of the list.
   ///
+  /// `runId`: Filter messages by the run ID that generated them.
+  ///
   /// `GET` `https://api.openai.com/v1/threads/{thread_id}/messages`
   Future<ListMessagesResponse> listThreadMessages({
     required String threadId,
@@ -938,6 +973,7 @@ class OpenAIClient {
     String order = 'desc',
     String? after,
     String? before,
+    String? runId,
   }) async {
     final r = await makeRequest(
       baseUrl: 'https://api.openai.com/v1',
@@ -951,6 +987,7 @@ class OpenAIClient {
         'order': order,
         if (after != null) 'after': after,
         if (before != null) 'before': before,
+        if (runId != null) 'run_id': runId,
       },
     );
     return ListMessagesResponse.fromJson(_jsonDecode(r));

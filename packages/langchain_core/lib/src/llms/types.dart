@@ -1,11 +1,16 @@
+import 'package:meta/meta.dart';
+
 import '../language_models/types.dart';
 
 /// {@template llm_options}
 /// Generation options to pass into the LLM.
 /// {@endtemplate}
+@immutable
 class LLMOptions extends LanguageModelOptions {
   /// {@macro llm_options}
-  const LLMOptions();
+  const LLMOptions({
+    super.concurrencyLimit,
+  });
 }
 
 /// {@template llm_result}
@@ -30,7 +35,7 @@ class LLMResult extends LanguageModelResult<String> {
     final LanguageModelResult<String> other,
   ) {
     return LLMResult(
-      id: other.id ?? id,
+      id: other.id,
       output: output + other.output,
       finishReason: other.finishReason,
       metadata: {
@@ -40,5 +45,18 @@ class LLMResult extends LanguageModelResult<String> {
       usage: usage.concat(other.usage),
       streaming: other.streaming,
     );
+  }
+
+  @override
+  String toString() {
+    return '''
+LLMResult{
+  id: $id, 
+  output: $output,
+  finishReason: $finishReason,
+  metadata: $metadata,
+  usage: $usage,
+  streaming: $streaming
+}''';
   }
 }

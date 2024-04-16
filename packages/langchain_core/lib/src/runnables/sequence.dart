@@ -1,5 +1,5 @@
-import '../langchain/types.dart';
 import 'runnable.dart';
+import 'types.dart';
 
 /// {@template runnable_sequence}
 /// A [RunnableSequence] allows you to run multiple [Runnable] objects
@@ -47,10 +47,10 @@ import 'runnable.dart';
 /// );
 ///
 /// // The following three chains are equivalent:
-/// final chain1 = promptTemplate | model | const StringOutputParser();
-/// final chain2 = promptTemplate.pipe(model).pipe(const StringOutputParser());
+/// final chain1 = promptTemplate | model | StringOutputParser();
+/// final chain2 = promptTemplate.pipe(model).pipe(StringOutputParser());
 /// final chain3 = Runnable.fromList(
-///   [promptTemplate, model, const StringOutputParser()],
+///   [promptTemplate, model, StringOutputParser()],
 /// );
 ///
 /// final res = await chain1.invoke({'topic': 'bears'});
@@ -59,22 +59,22 @@ import 'runnable.dart';
 /// ```
 /// {@endtemplate}
 class RunnableSequence<RunInput extends Object?, RunOutput extends Object?>
-    extends Runnable<RunInput, BaseLangChainOptions, RunOutput> {
+    extends Runnable<RunInput, RunnableOptions, RunOutput> {
   /// {@macro runnable_sequence}
   const RunnableSequence({
     required this.first,
     this.middle = const [],
     required this.last,
-  });
+  }) : super(defaultOptions: const RunnableOptions());
 
   /// The first [Runnable] in the [RunnableSequence].
-  final Runnable<RunInput, BaseLangChainOptions, Object?> first;
+  final Runnable<RunInput, RunnableOptions, Object?> first;
 
   /// The middle [Runnable]s in the [RunnableSequence].
   final List<Runnable> middle;
 
   /// The last [Runnable] in the [RunnableSequence].
-  final Runnable<Object?, BaseLangChainOptions, RunOutput> last;
+  final Runnable<Object?, RunnableOptions, RunOutput> last;
 
   /// Returns a list of all the [Runnable]s in the [RunnableSequence].
   List<Runnable> get steps => [first, ...middle, last];
@@ -97,21 +97,27 @@ class RunnableSequence<RunInput extends Object?, RunOutput extends Object?>
   @override
   Future<RunOutput> invoke(
     final RunInput input, {
-    final BaseLangChainOptions? options,
+    final RunnableOptions? options,
   }) async {
     Object? nextStepInput = input;
 
     for (final step in [first, ...middle]) {
-      nextStepInput = await step.invoke(nextStepInput, options: options);
+      nextStepInput = await step.invoke(
+        nextStepInput,
+        options: step.getCompatibleOptions(options),
+      );
     }
 
-    return last.invoke(nextStepInput, options: options);
+    return last.invoke(
+      nextStepInput,
+      options: last.getCompatibleOptions(options),
+    );
   }
 
   @override
   Stream<RunOutput> stream(
     final RunInput input, {
-    final BaseLangChainOptions? options,
+    final RunnableOptions? options,
   }) {
     return streamFromInputStream(
       Stream.value(input).asBroadcastStream(),
@@ -122,15 +128,37 @@ class RunnableSequence<RunInput extends Object?, RunOutput extends Object?>
   @override
   Stream<RunOutput> streamFromInputStream(
     final Stream<RunInput> inputStream, {
-    final BaseLangChainOptions? options,
+    final RunnableOptions? options,
   }) {
-    var nextStepStream = first.streamFromInputStream(inputStream);
-
-    for (final step in middle) {
-      nextStepStream = step.streamFromInputStream(nextStepStream);
+    Stream<Object?> nextStepStream;
+    try {
+      nextStepStream = first.streamFromInputStream(
+        inputStream,
+        options: first.getCompatibleOptions(options),
+      );
+    } on TypeError catch (e) {
+      _throwInvalidInputTypeStream(e, first);
     }
 
-    return last.streamFromInputStream(nextStepStream);
+    for (final step in middle) {
+      try {
+        nextStepStream = step.streamFromInputStream(
+          nextStepStream,
+          options: step.getCompatibleOptions(options),
+        );
+      } on TypeError catch (e) {
+        _throwInvalidInputTypeStream(e, step);
+      }
+    }
+
+    try {
+      return last.streamFromInputStream(
+        nextStepStream,
+        options: last.getCompatibleOptions(options),
+      );
+    } on TypeError catch (e) {
+      _throwInvalidInputTypeStream(e, last);
+    }
   }
 
   /// Pipes the output of this [RunnableSequence] into another [Runnable].
@@ -138,7 +166,7 @@ class RunnableSequence<RunInput extends Object?, RunOutput extends Object?>
   /// - [next] - the [Runnable] to pipe the output into.
   @override
   RunnableSequence<RunInput, NewRunOutput> pipe<NewRunOutput extends Object?,
-      NewCallOptions extends BaseLangChainOptions>(
+      NewCallOptions extends RunnableOptions>(
     final Runnable<RunOutput, NewCallOptions, NewRunOutput> next,
   ) {
     if (next is RunnableSequence<RunOutput, NewRunOutput>) {
@@ -155,5 +183,26 @@ class RunnableSequence<RunInput extends Object?, RunOutput extends Object?>
         last: next,
       );
     }
+  }
+
+  /// Provides a better error message for type errors when streaming.
+  Never _throwInvalidInputTypeStream(
+    final TypeError e,
+    final Runnable runnable,
+  ) {
+    // TypeError: type '_BroadcastStream<X>' is not a subtype of type 'Stream<Y>' of 'inputStream'
+    final pattern = RegExp(
+      r'_(As)?BroadcastStream<(?<BroadcastType>[^>]+)>.*?Stream<(?<StreamType>[^>]+)>',
+    );
+    final error = e.toString();
+    final match = pattern.firstMatch(error);
+    final actualInputType = match?.namedGroup('BroadcastType') ?? 'Unknown';
+    final expectedInputType = match?.namedGroup('StreamType') ?? 'Unknown';
+    final errorMessage = '''
+${runnable.runtimeType} runnable expects an input type of $expectedInputType, but received an instance of type $actualInputType instead.
+
+Please ensure that the output of the previous runnable in the sequence matches the expected input type of the current runnable. 
+    ''';
+    throw ArgumentError(errorMessage);
   }
 }

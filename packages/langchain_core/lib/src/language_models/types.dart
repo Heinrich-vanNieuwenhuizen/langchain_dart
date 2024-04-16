@@ -9,7 +9,9 @@ import '../langchain/types.dart';
 @immutable
 abstract class LanguageModelOptions extends BaseLangChainOptions {
   /// {@macro language_model_options}
-  const LanguageModelOptions();
+  const LanguageModelOptions({
+    super.concurrencyLimit,
+  });
 }
 
 /// {@template language_model}
@@ -28,7 +30,7 @@ abstract class LanguageModelResult<O extends Object> {
   });
 
   /// Result id.
-  final String? id;
+  final String id;
 
   /// Generated output.
   final O output;
@@ -75,19 +77,6 @@ abstract class LanguageModelResult<O extends Object> {
 
   /// Merges this result with another by concatenating the outputs.
   LanguageModelResult<O> concat(final LanguageModelResult<O> other);
-
-  @override
-  String toString() {
-    return '''
-LanguageModelResult{
-  id: $id, 
-  output: $output,
-  finishReason: $finishReason,
-  metadata: $metadata,
-  usage: $usage,
-  streaming: $streaming
-}''';
-  }
 }
 
 /// {@template language_model_usage}

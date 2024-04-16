@@ -250,7 +250,7 @@ void main() {
         ),
       ]);
       final chat = ChatOpenAI(apiKey: openaiApiKey);
-      const stringOutputParser = StringOutputParser<AIChatMessage>();
+      const stringOutputParser = StringOutputParser<ChatResult>();
 
       final chain = promptTemplate.pipe(chat).pipe(stringOutputParser);
       final stream = chain.stream({'max_num': '9'});
@@ -393,7 +393,7 @@ void main() {
       final chatModel = ChatOpenAI(
         apiKey: openaiApiKey,
         defaultOptions: const ChatOpenAIOptions(
-          model: 'gpt-4-vision-preview',
+          model: 'gpt-4-turbo',
         ),
       );
 
@@ -420,7 +420,7 @@ void main() {
       final chatModel = ChatOpenAI(
         apiKey: openaiApiKey,
         defaultOptions: const ChatOpenAIOptions(
-          model: 'gpt-4-vision-preview',
+          model: 'gpt-4-turbo',
         ),
       );
 

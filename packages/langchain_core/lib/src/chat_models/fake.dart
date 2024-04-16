@@ -11,7 +11,7 @@ class FakeChatModel extends SimpleChatModel {
   /// {@macro fake_list_llm}
   FakeChatModel({
     required this.responses,
-  });
+  }) : super(defaultOptions: const ChatModelOptions());
 
   /// Responses to return in order when called.
   final List<String> responses;
@@ -27,6 +27,24 @@ class FakeChatModel extends SimpleChatModel {
     final ChatModelOptions? options,
   }) {
     return Future<String>.value(responses[_i++ % responses.length]);
+  }
+
+  @override
+  Stream<ChatResult> stream(
+    final PromptValue input, {
+    final ChatModelOptions? options,
+  }) {
+    final res = responses[_i++ % responses.length].split('');
+    return Stream.fromIterable(res).map(
+      (final char) => ChatResult(
+        id: 'fake-chat-model',
+        output: AIChatMessage(content: char),
+        finishReason: FinishReason.stop,
+        metadata: const {},
+        usage: const LanguageModelUsage(),
+        streaming: true,
+      ),
+    );
   }
 
   @override
@@ -49,7 +67,7 @@ class FakeChatModel extends SimpleChatModel {
 /// {@endtemplate}
 class FakeEchoChatModel extends SimpleChatModel {
   /// {@macro fake_echo_llm}
-  const FakeEchoChatModel();
+  const FakeEchoChatModel() : super(defaultOptions: const ChatModelOptions());
 
   @override
   String get modelType => 'fake-echo-chat-model';

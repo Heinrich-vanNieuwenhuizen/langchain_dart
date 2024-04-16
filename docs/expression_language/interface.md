@@ -17,7 +17,7 @@ The type of the input and output varies by component:
 | `LLM`                       | `PromptValue`          | `LLMResult`            |
 | `ChatModel`                 | `PromptValue`          | `ChatResult`           |
 | `Chain`                     | `Map<String, dynamic>` | `Map<String, dynamic>` |
-| `OutputParser`              | `LanguageModelResult`  | Parser output type     |
+| `OutputParser`              | Runnable input type    | Parser output type     |
 | `Tool`                      | `Map<String, dynamic>` | `String`               |
 | `RunnableSequence`          | Fist input type        | Last output type       |
 | `RunnableMap`               | Runnable input type    | `Map<String, dynamic>` |
@@ -60,7 +60,7 @@ final promptTemplate = ChatPromptTemplate.fromTemplate(
   'Tell me a joke about {topic}',
 );
 
-final chain = promptTemplate | model | const StringOutputParser();
+final chain = promptTemplate | model | StringOutputParser();
 ```
 
 ### Invoke
@@ -104,7 +104,40 @@ await for (final res in stream) {
 
 ### Batch
 
-Batch is not supported yet.
+Batches the invocation of the `Runnable` on the given `inputs`.
+
+```dart
+final res = await chain.batch([
+  {'topic': 'bears'},
+  {'topic': 'cats'},
+]);
+print(res);
+//['Why did the bear break up with his girlfriend? Because she was too "grizzly" for him!',
+// 'Why was the cat sitting on the computer? Because it wanted to keep an eye on the mouse!']
+```
+
+If the underlying provider supports batching, this method will try to batch the calls to the provider. Otherwise, it will just call `invoke` on each input concurrently. You can configure the concurrency limit by setting the `concurrencyLimit` field in the `options` parameter.
+
+You can provide call options to the `batch` method using the `options` parameter. It can be:
+- `null`: the default options are used.
+- List with 1 element: the same options are used for all inputs.
+- List with the same length as the inputs: each input gets its own options.
+
+```dart
+final res = await chain.batch(
+  [
+    {'topic': 'bears'},
+    {'topic': 'cats'},
+  ],
+  options: [
+    const ChatOpenAIOptions(model: 'gpt-3.5-turbo', temperature: 0.5),
+    const ChatOpenAIOptions(model: 'gpt-4', temperature: 0.7),
+  ],
+);
+print(res);
+//['Why did the bear break up with his girlfriend? Because he couldn't bear the relationship anymore!,',
+// 'Why don't cats play poker in the jungle? Because there's too many cheetahs!']
+```
 
 ## Runnable types
 
@@ -135,10 +168,10 @@ final promptTemplate = ChatPromptTemplate.fromTemplate(
 );
 
 // The following three chains are equivalent:
-final chain1 = promptTemplate | model | const StringOutputParser();
-final chain2 = promptTemplate.pipe(model).pipe(const StringOutputParser());
+final chain1 = promptTemplate | model | StringOutputParser();
+final chain2 = promptTemplate.pipe(model).pipe(StringOutputParser());
 final chain3 = Runnable.fromList(
-  [promptTemplate, model, const StringOutputParser()],
+  [promptTemplate, model, StringOutputParser()],
 );
 
 final res = await chain1.invoke({'topic': 'bears'});
@@ -169,7 +202,7 @@ final promptTemplate2 = ChatPromptTemplate.fromTemplate(
 final promptTemplate3 = ChatPromptTemplate.fromTemplate(
   'Is {city} a good city for a {age} years old person?',
 );
-const stringOutputParser = StringOutputParser();
+const stringOutputParser = StringOutputParser<ChatResult>();
 
 final chain = Runnable.fromMap({
   'city': promptTemplate1 | model | stringOutputParser,
@@ -201,7 +234,7 @@ final promptTemplate = ChatPromptTemplate.fromTemplate(
 
 final chain = promptTemplate |
     model.bind(const ChatOpenAIOptions(stop: ['\n'])) |
-    const StringOutputParser();
+    StringOutputParser();
 
 final res = await chain.invoke({'foo': 'bears'});
 print(res);
@@ -245,7 +278,7 @@ final chain = Runnable.fromMap({
     }) |
     promptTemplate |
     model |
-    const StringOutputParser();
+    StringOutputParser();
 
 final res = await chain.invoke({'foo': 'foo', 'bar': 'bar'});
 print(res);
@@ -273,7 +306,7 @@ final promptTemplate = ChatPromptTemplate.fromTemplate(
 final map = Runnable.fromMap({
   'foo': Runnable.passthrough(),
 });
-final chain = map | promptTemplate | model | const StringOutputParser();
+final chain = map | promptTemplate | model | StringOutputParser();
 
 final res = await chain.invoke('bears');
 print(res);
@@ -307,7 +340,7 @@ final chain = Runnable.fromMap({
     }) |
     promptTemplate |
     model |
-    const StringOutputParser();
+    StringOutputParser();
 
 final res = await chain.invoke({
   'question': 'What payment methods do you accept?',
@@ -346,7 +379,7 @@ final promptTemplate = ChatPromptTemplate.fromTemplate(
 final chain = Runnable.getMapFromInput('foo') |
     promptTemplate |
     model |
-    const StringOutputParser();
+    StringOutputParser();
 
 final res = await chain.invoke('bears');
 print(res);
