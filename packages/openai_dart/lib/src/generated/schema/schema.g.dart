@@ -2093,6 +2093,10 @@ _$CreateAssistantRequestImpl _$$CreateAssistantRequestImplFromJson(
               .toList() ??
           const [],
       metadata: json['metadata'] as Map<String, dynamic>?,
+      temperature: (json['temperature'] as num?)?.toDouble() ?? 1.0,
+      topP: (json['top_p'] as num?)?.toDouble() ?? 1.0,
+      responseFormat: const _CreateAssistantRequestResponseFormatConverter()
+          .fromJson(json['response_format']),
     );
 
 Map<String, dynamic> _$$CreateAssistantRequestImplToJson(
@@ -2113,6 +2117,12 @@ Map<String, dynamic> _$$CreateAssistantRequestImplToJson(
   val['tools'] = instance.tools.map((e) => e.toJson()).toList();
   val['file_ids'] = instance.fileIds;
   writeNotNull('metadata', instance.metadata);
+  writeNotNull('temperature', instance.temperature);
+  writeNotNull('top_p', instance.topP);
+  writeNotNull(
+      'response_format',
+      const _CreateAssistantRequestResponseFormatConverter()
+          .toJson(instance.responseFormat));
   return val;
 }
 
@@ -2165,6 +2175,46 @@ Map<String, dynamic> _$$AssistantModelStringImplToJson(
       'runtimeType': instance.$type,
     };
 
+_$CreateAssistantRequestResponseFormatEnumerationImpl
+    _$$CreateAssistantRequestResponseFormatEnumerationImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateAssistantRequestResponseFormatEnumerationImpl(
+          $enumDecode(
+              _$CreateAssistantResponseFormatModeEnumMap, json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$CreateAssistantRequestResponseFormatEnumerationImplToJson(
+            _$CreateAssistantRequestResponseFormatEnumerationImpl instance) =>
+        <String, dynamic>{
+          'value': _$CreateAssistantResponseFormatModeEnumMap[instance.value]!,
+          'runtimeType': instance.$type,
+        };
+
+const _$CreateAssistantResponseFormatModeEnumMap = {
+  CreateAssistantResponseFormatMode.none: 'none',
+  CreateAssistantResponseFormatMode.auto: 'auto',
+};
+
+_$CreateAssistantRequestResponseFormatAssistantsResponseFormatImpl
+    _$$CreateAssistantRequestResponseFormatAssistantsResponseFormatImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateAssistantRequestResponseFormatAssistantsResponseFormatImpl(
+          AssistantsResponseFormat.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$CreateAssistantRequestResponseFormatAssistantsResponseFormatImplToJson(
+            _$CreateAssistantRequestResponseFormatAssistantsResponseFormatImpl
+                instance) =>
+        <String, dynamic>{
+          'value': instance.value.toJson(),
+          'runtimeType': instance.$type,
+        };
+
 _$ModifyAssistantRequestImpl _$$ModifyAssistantRequestImplFromJson(
         Map<String, dynamic> json) =>
     _$ModifyAssistantRequestImpl(
@@ -2181,6 +2231,10 @@ _$ModifyAssistantRequestImpl _$$ModifyAssistantRequestImplFromJson(
               .toList() ??
           const [],
       metadata: json['metadata'] as Map<String, dynamic>?,
+      temperature: (json['temperature'] as num?)?.toDouble() ?? 1.0,
+      topP: (json['top_p'] as num?)?.toDouble() ?? 1.0,
+      responseFormat: const _ModifyAssistantRequestResponseFormatConverter()
+          .fromJson(json['response_format']),
     );
 
 Map<String, dynamic> _$$ModifyAssistantRequestImplToJson(
@@ -2200,8 +2254,54 @@ Map<String, dynamic> _$$ModifyAssistantRequestImplToJson(
   val['tools'] = instance.tools.map((e) => e.toJson()).toList();
   val['file_ids'] = instance.fileIds;
   writeNotNull('metadata', instance.metadata);
+  writeNotNull('temperature', instance.temperature);
+  writeNotNull('top_p', instance.topP);
+  writeNotNull(
+      'response_format',
+      const _ModifyAssistantRequestResponseFormatConverter()
+          .toJson(instance.responseFormat));
   return val;
 }
+
+_$ModifyAssistantRequestResponseFormatEnumerationImpl
+    _$$ModifyAssistantRequestResponseFormatEnumerationImplFromJson(
+            Map<String, dynamic> json) =>
+        _$ModifyAssistantRequestResponseFormatEnumerationImpl(
+          $enumDecode(
+              _$ModifyAssistantResponseFormatModeEnumMap, json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$ModifyAssistantRequestResponseFormatEnumerationImplToJson(
+            _$ModifyAssistantRequestResponseFormatEnumerationImpl instance) =>
+        <String, dynamic>{
+          'value': _$ModifyAssistantResponseFormatModeEnumMap[instance.value]!,
+          'runtimeType': instance.$type,
+        };
+
+const _$ModifyAssistantResponseFormatModeEnumMap = {
+  ModifyAssistantResponseFormatMode.none: 'none',
+  ModifyAssistantResponseFormatMode.auto: 'auto',
+};
+
+_$ModifyAssistantRequestResponseFormatAssistantsResponseFormatImpl
+    _$$ModifyAssistantRequestResponseFormatAssistantsResponseFormatImplFromJson(
+            Map<String, dynamic> json) =>
+        _$ModifyAssistantRequestResponseFormatAssistantsResponseFormatImpl(
+          AssistantsResponseFormat.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$ModifyAssistantRequestResponseFormatAssistantsResponseFormatImplToJson(
+            _$ModifyAssistantRequestResponseFormatAssistantsResponseFormatImpl
+                instance) =>
+        <String, dynamic>{
+          'value': instance.value.toJson(),
+          'runtimeType': instance.$type,
+        };
 
 _$DeleteAssistantResponseImpl _$$DeleteAssistantResponseImplFromJson(
         Map<String, dynamic> json) =>
@@ -2246,6 +2346,97 @@ Map<String, dynamic> _$$ListAssistantsResponseImplToJson(
       'has_more': instance.hasMore,
     };
 
+_$AssistantsNamedToolChoiceImpl _$$AssistantsNamedToolChoiceImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AssistantsNamedToolChoiceImpl(
+      type: $enumDecode(_$AssistantsToolTypeEnumMap, json['type']),
+      function: json['function'] == null
+          ? null
+          : AssistantsFunctionCallOption.fromJson(
+              json['function'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$$AssistantsNamedToolChoiceImplToJson(
+    _$AssistantsNamedToolChoiceImpl instance) {
+  final val = <String, dynamic>{
+    'type': _$AssistantsToolTypeEnumMap[instance.type]!,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('function', instance.function?.toJson());
+  return val;
+}
+
+const _$AssistantsToolTypeEnumMap = {
+  AssistantsToolType.function: 'function',
+  AssistantsToolType.codeInterpreter: 'code_interpreter',
+  AssistantsToolType.retrieval: 'retrieval',
+};
+
+_$AssistantsFunctionCallOptionImpl _$$AssistantsFunctionCallOptionImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AssistantsFunctionCallOptionImpl(
+      name: json['name'] as String,
+    );
+
+Map<String, dynamic> _$$AssistantsFunctionCallOptionImplToJson(
+        _$AssistantsFunctionCallOptionImpl instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+    };
+
+_$AssistantsResponseFormatImpl _$$AssistantsResponseFormatImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AssistantsResponseFormatImpl(
+      type: $enumDecodeNullable(
+              _$AssistantsResponseFormatTypeEnumMap, json['type']) ??
+          AssistantsResponseFormatType.text,
+    );
+
+Map<String, dynamic> _$$AssistantsResponseFormatImplToJson(
+        _$AssistantsResponseFormatImpl instance) =>
+    <String, dynamic>{
+      'type': _$AssistantsResponseFormatTypeEnumMap[instance.type]!,
+    };
+
+const _$AssistantsResponseFormatTypeEnumMap = {
+  AssistantsResponseFormatType.text: 'text',
+  AssistantsResponseFormatType.jsonObject: 'json_object',
+};
+
+_$TruncationObjectImpl _$$TruncationObjectImplFromJson(
+        Map<String, dynamic> json) =>
+    _$TruncationObjectImpl(
+      type: $enumDecode(_$TruncationObjectTypeEnumMap, json['type']),
+      lastMessages: json['last_messages'] as int?,
+    );
+
+Map<String, dynamic> _$$TruncationObjectImplToJson(
+    _$TruncationObjectImpl instance) {
+  final val = <String, dynamic>{
+    'type': _$TruncationObjectTypeEnumMap[instance.type]!,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('last_messages', instance.lastMessages);
+  return val;
+}
+
+const _$TruncationObjectTypeEnumMap = {
+  TruncationObjectType.auto: 'auto',
+  TruncationObjectType.lastMessages: 'last_messages',
+};
+
 _$RunObjectImpl _$$RunObjectImplFromJson(Map<String, dynamic> json) =>
     _$RunObjectImpl(
       id: json['id'] as String,
@@ -2266,6 +2457,10 @@ _$RunObjectImpl _$$RunObjectImplFromJson(Map<String, dynamic> json) =>
       cancelledAt: json['cancelled_at'] as int?,
       failedAt: json['failed_at'] as int?,
       completedAt: json['completed_at'] as int?,
+      incompleteDetails: json['incomplete_details'] == null
+          ? null
+          : RunObjectIncompleteDetails.fromJson(
+              json['incomplete_details'] as Map<String, dynamic>),
       model: json['model'] as String,
       instructions: json['instructions'] as String,
       tools: (json['tools'] as List<dynamic>)
@@ -2278,6 +2473,17 @@ _$RunObjectImpl _$$RunObjectImplFromJson(Map<String, dynamic> json) =>
           ? null
           : RunCompletionUsage.fromJson(json['usage'] as Map<String, dynamic>),
       temperature: (json['temperature'] as num?)?.toDouble(),
+      topP: (json['top_p'] as num?)?.toDouble(),
+      maxPromptTokens: json['max_prompt_tokens'] as int?,
+      maxCompletionTokens: json['max_completion_tokens'] as int?,
+      truncationStrategy: json['truncation_strategy'] == null
+          ? null
+          : TruncationObject.fromJson(
+              json['truncation_strategy'] as Map<String, dynamic>),
+      toolChoice:
+          const _RunObjectToolChoiceConverter().fromJson(json['tool_choice']),
+      responseFormat: const _RunObjectResponseFormatConverter()
+          .fromJson(json['response_format']),
     );
 
 Map<String, dynamic> _$$RunObjectImplToJson(_$RunObjectImpl instance) {
@@ -2295,6 +2501,7 @@ Map<String, dynamic> _$$RunObjectImplToJson(_$RunObjectImpl instance) {
     'cancelled_at': instance.cancelledAt,
     'failed_at': instance.failedAt,
     'completed_at': instance.completedAt,
+    'incomplete_details': instance.incompleteDetails?.toJson(),
     'model': instance.model,
     'instructions': instance.instructions,
     'tools': instance.tools.map((e) => e.toJson()).toList(),
@@ -2310,6 +2517,14 @@ Map<String, dynamic> _$$RunObjectImplToJson(_$RunObjectImpl instance) {
   }
 
   writeNotNull('temperature', instance.temperature);
+  writeNotNull('top_p', instance.topP);
+  val['max_prompt_tokens'] = instance.maxPromptTokens;
+  val['max_completion_tokens'] = instance.maxCompletionTokens;
+  val['truncation_strategy'] = instance.truncationStrategy?.toJson();
+  val['tool_choice'] = _$JsonConverterToJson<Object?, RunObjectToolChoice>(
+      instance.toolChoice, const _RunObjectToolChoiceConverter().toJson);
+  val['response_format'] =
+      const _RunObjectResponseFormatConverter().toJson(instance.responseFormat);
   return val;
 }
 
@@ -2365,6 +2580,106 @@ const _$RunLastErrorCodeEnumMap = {
   RunLastErrorCode.invalidPrompt: 'invalid_prompt',
 };
 
+_$RunObjectIncompleteDetailsImpl _$$RunObjectIncompleteDetailsImplFromJson(
+        Map<String, dynamic> json) =>
+    _$RunObjectIncompleteDetailsImpl(
+      reason: $enumDecodeNullable(
+          _$RunObjectIncompleteDetailsReasonEnumMap, json['reason'],
+          unknownValue: JsonKey.nullForUndefinedEnumValue),
+    );
+
+Map<String, dynamic> _$$RunObjectIncompleteDetailsImplToJson(
+    _$RunObjectIncompleteDetailsImpl instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull(
+      'reason', _$RunObjectIncompleteDetailsReasonEnumMap[instance.reason]);
+  return val;
+}
+
+const _$RunObjectIncompleteDetailsReasonEnumMap = {
+  RunObjectIncompleteDetailsReason.maxCompletionTokens: 'max_completion_tokens',
+  RunObjectIncompleteDetailsReason.maxPromptTokens: 'max_prompt_tokens',
+};
+
+_$RunObjectToolChoiceEnumerationImpl
+    _$$RunObjectToolChoiceEnumerationImplFromJson(Map<String, dynamic> json) =>
+        _$RunObjectToolChoiceEnumerationImpl(
+          $enumDecode(_$RunObjectToolChoiceModeEnumMap, json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic> _$$RunObjectToolChoiceEnumerationImplToJson(
+        _$RunObjectToolChoiceEnumerationImpl instance) =>
+    <String, dynamic>{
+      'value': _$RunObjectToolChoiceModeEnumMap[instance.value]!,
+      'runtimeType': instance.$type,
+    };
+
+const _$RunObjectToolChoiceModeEnumMap = {
+  RunObjectToolChoiceMode.none: 'none',
+  RunObjectToolChoiceMode.auto: 'auto',
+};
+
+_$RunObjectToolChoiceAssistantsNamedToolChoiceImpl
+    _$$RunObjectToolChoiceAssistantsNamedToolChoiceImplFromJson(
+            Map<String, dynamic> json) =>
+        _$RunObjectToolChoiceAssistantsNamedToolChoiceImpl(
+          AssistantsNamedToolChoice.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic> _$$RunObjectToolChoiceAssistantsNamedToolChoiceImplToJson(
+        _$RunObjectToolChoiceAssistantsNamedToolChoiceImpl instance) =>
+    <String, dynamic>{
+      'value': instance.value.toJson(),
+      'runtimeType': instance.$type,
+    };
+
+_$RunObjectResponseFormatEnumerationImpl
+    _$$RunObjectResponseFormatEnumerationImplFromJson(
+            Map<String, dynamic> json) =>
+        _$RunObjectResponseFormatEnumerationImpl(
+          $enumDecode(_$RunObjectResponseFormatModeEnumMap, json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic> _$$RunObjectResponseFormatEnumerationImplToJson(
+        _$RunObjectResponseFormatEnumerationImpl instance) =>
+    <String, dynamic>{
+      'value': _$RunObjectResponseFormatModeEnumMap[instance.value]!,
+      'runtimeType': instance.$type,
+    };
+
+const _$RunObjectResponseFormatModeEnumMap = {
+  RunObjectResponseFormatMode.none: 'none',
+  RunObjectResponseFormatMode.auto: 'auto',
+};
+
+_$RunObjectResponseFormatAssistantsResponseFormatImpl
+    _$$RunObjectResponseFormatAssistantsResponseFormatImplFromJson(
+            Map<String, dynamic> json) =>
+        _$RunObjectResponseFormatAssistantsResponseFormatImpl(
+          AssistantsResponseFormat.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$RunObjectResponseFormatAssistantsResponseFormatImplToJson(
+            _$RunObjectResponseFormatAssistantsResponseFormatImpl instance) =>
+        <String, dynamic>{
+          'value': instance.value.toJson(),
+          'runtimeType': instance.$type,
+        };
+
 _$RunSubmitToolOutputsImpl _$$RunSubmitToolOutputsImplFromJson(
         Map<String, dynamic> json) =>
     _$RunSubmitToolOutputsImpl(
@@ -2410,6 +2725,17 @@ _$CreateRunRequestImpl _$$CreateRunRequestImplFromJson(
           .toList(),
       metadata: json['metadata'] as Map<String, dynamic>?,
       temperature: (json['temperature'] as num?)?.toDouble() ?? 1.0,
+      topP: (json['top_p'] as num?)?.toDouble() ?? 1.0,
+      maxPromptTokens: json['max_prompt_tokens'] as int?,
+      maxCompletionTokens: json['max_completion_tokens'] as int?,
+      truncationStrategy: json['truncation_strategy'] == null
+          ? null
+          : TruncationObject.fromJson(
+              json['truncation_strategy'] as Map<String, dynamic>),
+      toolChoice: const _CreateRunRequestToolChoiceConverter()
+          .fromJson(json['tool_choice']),
+      responseFormat: const _CreateRunRequestResponseFormatConverter()
+          .fromJson(json['response_format']),
       stream: json['stream'] as bool?,
     );
 
@@ -2434,6 +2760,16 @@ Map<String, dynamic> _$$CreateRunRequestImplToJson(
   writeNotNull('tools', instance.tools?.map((e) => e.toJson()).toList());
   writeNotNull('metadata', instance.metadata);
   writeNotNull('temperature', instance.temperature);
+  writeNotNull('top_p', instance.topP);
+  writeNotNull('max_prompt_tokens', instance.maxPromptTokens);
+  writeNotNull('max_completion_tokens', instance.maxCompletionTokens);
+  writeNotNull('truncation_strategy', instance.truncationStrategy?.toJson());
+  writeNotNull('tool_choice',
+      const _CreateRunRequestToolChoiceConverter().toJson(instance.toolChoice));
+  writeNotNull(
+      'response_format',
+      const _CreateRunRequestResponseFormatConverter()
+          .toJson(instance.responseFormat));
   writeNotNull('stream', instance.stream);
   return val;
 }
@@ -2487,6 +2823,82 @@ Map<String, dynamic> _$$CreateRunRequestModelStringImplToJson(
       'value': instance.value,
       'runtimeType': instance.$type,
     };
+
+_$CreateRunRequestToolChoiceEnumerationImpl
+    _$$CreateRunRequestToolChoiceEnumerationImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateRunRequestToolChoiceEnumerationImpl(
+          $enumDecode(_$CreateRunRequestToolChoiceModeEnumMap, json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic> _$$CreateRunRequestToolChoiceEnumerationImplToJson(
+        _$CreateRunRequestToolChoiceEnumerationImpl instance) =>
+    <String, dynamic>{
+      'value': _$CreateRunRequestToolChoiceModeEnumMap[instance.value]!,
+      'runtimeType': instance.$type,
+    };
+
+const _$CreateRunRequestToolChoiceModeEnumMap = {
+  CreateRunRequestToolChoiceMode.none: 'none',
+  CreateRunRequestToolChoiceMode.auto: 'auto',
+};
+
+_$CreateRunRequestToolChoiceAssistantsNamedToolChoiceImpl
+    _$$CreateRunRequestToolChoiceAssistantsNamedToolChoiceImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateRunRequestToolChoiceAssistantsNamedToolChoiceImpl(
+          AssistantsNamedToolChoice.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String,
+    dynamic> _$$CreateRunRequestToolChoiceAssistantsNamedToolChoiceImplToJson(
+        _$CreateRunRequestToolChoiceAssistantsNamedToolChoiceImpl instance) =>
+    <String, dynamic>{
+      'value': instance.value.toJson(),
+      'runtimeType': instance.$type,
+    };
+
+_$CreateRunRequestResponseFormatEnumerationImpl
+    _$$CreateRunRequestResponseFormatEnumerationImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateRunRequestResponseFormatEnumerationImpl(
+          $enumDecode(
+              _$CreateRunRequestResponseFormatModeEnumMap, json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic> _$$CreateRunRequestResponseFormatEnumerationImplToJson(
+        _$CreateRunRequestResponseFormatEnumerationImpl instance) =>
+    <String, dynamic>{
+      'value': _$CreateRunRequestResponseFormatModeEnumMap[instance.value]!,
+      'runtimeType': instance.$type,
+    };
+
+const _$CreateRunRequestResponseFormatModeEnumMap = {
+  CreateRunRequestResponseFormatMode.none: 'none',
+  CreateRunRequestResponseFormatMode.auto: 'auto',
+};
+
+_$CreateRunRequestResponseFormatAssistantsResponseFormatImpl
+    _$$CreateRunRequestResponseFormatAssistantsResponseFormatImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateRunRequestResponseFormatAssistantsResponseFormatImpl(
+          AssistantsResponseFormat.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$CreateRunRequestResponseFormatAssistantsResponseFormatImplToJson(
+            _$CreateRunRequestResponseFormatAssistantsResponseFormatImpl
+                instance) =>
+        <String, dynamic>{
+          'value': instance.value.toJson(),
+          'runtimeType': instance.$type,
+        };
 
 _$ListRunsResponseImpl _$$ListRunsResponseImplFromJson(
         Map<String, dynamic> json) =>
@@ -2627,6 +3039,17 @@ _$CreateThreadAndRunRequestImpl _$$CreateThreadAndRunRequestImplFromJson(
           .toList(),
       metadata: json['metadata'] as Map<String, dynamic>?,
       temperature: (json['temperature'] as num?)?.toDouble() ?? 1.0,
+      topP: (json['top_p'] as num?)?.toDouble() ?? 1.0,
+      maxPromptTokens: json['max_prompt_tokens'] as int?,
+      maxCompletionTokens: json['max_completion_tokens'] as int?,
+      truncationStrategy: json['truncation_strategy'] == null
+          ? null
+          : TruncationObject.fromJson(
+              json['truncation_strategy'] as Map<String, dynamic>),
+      toolChoice: const _CreateThreadAndRunRequestToolChoiceConverter()
+          .fromJson(json['tool_choice']),
+      responseFormat: const _CreateThreadAndRunRequestResponseFormatConverter()
+          .fromJson(json['response_format']),
       stream: json['stream'] as bool?,
     );
 
@@ -2649,6 +3072,18 @@ Map<String, dynamic> _$$CreateThreadAndRunRequestImplToJson(
   writeNotNull('tools', instance.tools?.map((e) => e.toJson()).toList());
   writeNotNull('metadata', instance.metadata);
   writeNotNull('temperature', instance.temperature);
+  writeNotNull('top_p', instance.topP);
+  writeNotNull('max_prompt_tokens', instance.maxPromptTokens);
+  writeNotNull('max_completion_tokens', instance.maxCompletionTokens);
+  writeNotNull('truncation_strategy', instance.truncationStrategy?.toJson());
+  writeNotNull(
+      'tool_choice',
+      const _CreateThreadAndRunRequestToolChoiceConverter()
+          .toJson(instance.toolChoice));
+  writeNotNull(
+      'response_format',
+      const _CreateThreadAndRunRequestResponseFormatConverter()
+          .toJson(instance.responseFormat));
   writeNotNull('stream', instance.stream);
   return val;
 }
@@ -2701,6 +3136,88 @@ Map<String, dynamic> _$$ThreadAndRunModelStringImplToJson(
       'value': instance.value,
       'runtimeType': instance.$type,
     };
+
+_$CreateThreadAndRunRequestToolChoiceEnumerationImpl
+    _$$CreateThreadAndRunRequestToolChoiceEnumerationImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateThreadAndRunRequestToolChoiceEnumerationImpl(
+          $enumDecode(
+              _$CreateThreadAndRunRequestToolChoiceModeEnumMap, json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$CreateThreadAndRunRequestToolChoiceEnumerationImplToJson(
+            _$CreateThreadAndRunRequestToolChoiceEnumerationImpl instance) =>
+        <String, dynamic>{
+          'value':
+              _$CreateThreadAndRunRequestToolChoiceModeEnumMap[instance.value]!,
+          'runtimeType': instance.$type,
+        };
+
+const _$CreateThreadAndRunRequestToolChoiceModeEnumMap = {
+  CreateThreadAndRunRequestToolChoiceMode.none: 'none',
+  CreateThreadAndRunRequestToolChoiceMode.auto: 'auto',
+};
+
+_$CreateThreadAndRunRequestToolChoiceAssistantsNamedToolChoiceImpl
+    _$$CreateThreadAndRunRequestToolChoiceAssistantsNamedToolChoiceImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateThreadAndRunRequestToolChoiceAssistantsNamedToolChoiceImpl(
+          AssistantsNamedToolChoice.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$CreateThreadAndRunRequestToolChoiceAssistantsNamedToolChoiceImplToJson(
+            _$CreateThreadAndRunRequestToolChoiceAssistantsNamedToolChoiceImpl
+                instance) =>
+        <String, dynamic>{
+          'value': instance.value.toJson(),
+          'runtimeType': instance.$type,
+        };
+
+_$CreateThreadAndRunRequestResponseFormatEnumerationImpl
+    _$$CreateThreadAndRunRequestResponseFormatEnumerationImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateThreadAndRunRequestResponseFormatEnumerationImpl(
+          $enumDecode(_$CreateThreadAndRunRequestResponseFormatModeEnumMap,
+              json['value']),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String,
+    dynamic> _$$CreateThreadAndRunRequestResponseFormatEnumerationImplToJson(
+        _$CreateThreadAndRunRequestResponseFormatEnumerationImpl instance) =>
+    <String, dynamic>{
+      'value':
+          _$CreateThreadAndRunRequestResponseFormatModeEnumMap[instance.value]!,
+      'runtimeType': instance.$type,
+    };
+
+const _$CreateThreadAndRunRequestResponseFormatModeEnumMap = {
+  CreateThreadAndRunRequestResponseFormatMode.none: 'none',
+  CreateThreadAndRunRequestResponseFormatMode.auto: 'auto',
+};
+
+_$CreateThreadAndRunRequestResponseFormatAssistantsResponseFormatImpl
+    _$$CreateThreadAndRunRequestResponseFormatAssistantsResponseFormatImplFromJson(
+            Map<String, dynamic> json) =>
+        _$CreateThreadAndRunRequestResponseFormatAssistantsResponseFormatImpl(
+          AssistantsResponseFormat.fromJson(
+              json['value'] as Map<String, dynamic>),
+          $type: json['runtimeType'] as String?,
+        );
+
+Map<String, dynamic>
+    _$$CreateThreadAndRunRequestResponseFormatAssistantsResponseFormatImplToJson(
+            _$CreateThreadAndRunRequestResponseFormatAssistantsResponseFormatImpl
+                instance) =>
+        <String, dynamic>{
+          'value': instance.value.toJson(),
+          'runtimeType': instance.$type,
+        };
 
 _$ThreadObjectImpl _$$ThreadObjectImplFromJson(Map<String, dynamic> json) =>
     _$ThreadObjectImpl(
@@ -3534,6 +4051,187 @@ Map<String, dynamic> _$$ErrorImplToJson(_$ErrorImpl instance) =>
       'param': instance.param,
       'type': instance.type,
     };
+
+_$CreateBatchRequestImpl _$$CreateBatchRequestImplFromJson(
+        Map<String, dynamic> json) =>
+    _$CreateBatchRequestImpl(
+      inputFileId: json['input_file_id'] as String,
+      endpoint: $enumDecode(_$BatchEndpointEnumMap, json['endpoint']),
+      completionWindow: $enumDecode(
+          _$BatchCompletionWindowEnumMap, json['completion_window']),
+      metadata: (json['metadata'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, e as String),
+      ),
+    );
+
+Map<String, dynamic> _$$CreateBatchRequestImplToJson(
+    _$CreateBatchRequestImpl instance) {
+  final val = <String, dynamic>{
+    'input_file_id': instance.inputFileId,
+    'endpoint': _$BatchEndpointEnumMap[instance.endpoint]!,
+    'completion_window':
+        _$BatchCompletionWindowEnumMap[instance.completionWindow]!,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('metadata', instance.metadata);
+  return val;
+}
+
+const _$BatchEndpointEnumMap = {
+  BatchEndpoint.v1ChatCompletions: '/v1/chat/completions',
+};
+
+const _$BatchCompletionWindowEnumMap = {
+  BatchCompletionWindow.v24h: '24h',
+};
+
+_$BatchImpl _$$BatchImplFromJson(Map<String, dynamic> json) => _$BatchImpl(
+      id: json['id'] as String,
+      object: $enumDecode(_$BatchObjectEnumMap, json['object']),
+      endpoint: $enumDecode(_$BatchEndpointEnumMap, json['endpoint']),
+      errors: json['errors'] == null
+          ? null
+          : BatchErrors.fromJson(json['errors'] as Map<String, dynamic>),
+      inputFileId: json['input_file_id'] as String,
+      completionWindow: $enumDecode(
+          _$BatchCompletionWindowEnumMap, json['completion_window']),
+      status: $enumDecode(_$BatchStatusEnumMap, json['status']),
+      outputFileId: json['output_file_id'] as String?,
+      errorFileId: json['error_file_id'] as String?,
+      createdAt: json['created_at'] as String,
+      inProgressAt: json['in_progress_at'] as String?,
+      expiresAt: json['expires_at'] as String?,
+      finalizingAt: json['finalizing_at'] as String?,
+      completedAt: json['completed_at'] as String?,
+      failedAt: json['failed_at'] as String?,
+      expiredAt: json['expired_at'] as String?,
+      cancellingAt: json['cancelling_at'] as String?,
+      cancelledAt: json['cancelled_at'] as String?,
+      requestCounts: json['request_counts'] == null
+          ? null
+          : BatchRequestCounts.fromJson(
+              json['request_counts'] as Map<String, dynamic>),
+      metadata: json['metadata'],
+    );
+
+Map<String, dynamic> _$$BatchImplToJson(_$BatchImpl instance) {
+  final val = <String, dynamic>{
+    'id': instance.id,
+    'object': _$BatchObjectEnumMap[instance.object]!,
+    'endpoint': _$BatchEndpointEnumMap[instance.endpoint]!,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('errors', instance.errors?.toJson());
+  val['input_file_id'] = instance.inputFileId;
+  val['completion_window'] =
+      _$BatchCompletionWindowEnumMap[instance.completionWindow]!;
+  val['status'] = _$BatchStatusEnumMap[instance.status]!;
+  writeNotNull('output_file_id', instance.outputFileId);
+  writeNotNull('error_file_id', instance.errorFileId);
+  val['created_at'] = instance.createdAt;
+  writeNotNull('in_progress_at', instance.inProgressAt);
+  writeNotNull('expires_at', instance.expiresAt);
+  writeNotNull('finalizing_at', instance.finalizingAt);
+  writeNotNull('completed_at', instance.completedAt);
+  writeNotNull('failed_at', instance.failedAt);
+  writeNotNull('expired_at', instance.expiredAt);
+  writeNotNull('cancelling_at', instance.cancellingAt);
+  writeNotNull('cancelled_at', instance.cancelledAt);
+  writeNotNull('request_counts', instance.requestCounts?.toJson());
+  writeNotNull('metadata', instance.metadata);
+  return val;
+}
+
+const _$BatchObjectEnumMap = {
+  BatchObject.batch: 'batch',
+};
+
+const _$BatchStatusEnumMap = {
+  BatchStatus.validating: 'validating',
+  BatchStatus.failed: 'failed',
+  BatchStatus.inProgress: 'in_progress',
+  BatchStatus.finalizing: 'finalizing',
+  BatchStatus.completed: 'completed',
+  BatchStatus.expired: 'expired',
+  BatchStatus.cancelling: 'cancelling',
+  BatchStatus.cancelled: 'cancelled',
+};
+
+_$BatchErrorsImpl _$$BatchErrorsImplFromJson(Map<String, dynamic> json) =>
+    _$BatchErrorsImpl(
+      object: json['object'] as String?,
+      data: (json['data'] as List<dynamic>?)
+          ?.map((e) => BatchErrorsDataInner.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$$BatchErrorsImplToJson(_$BatchErrorsImpl instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('object', instance.object);
+  writeNotNull('data', instance.data?.map((e) => e.toJson()).toList());
+  return val;
+}
+
+_$BatchRequestCountsImpl _$$BatchRequestCountsImplFromJson(
+        Map<String, dynamic> json) =>
+    _$BatchRequestCountsImpl(
+      total: json['total'] as int,
+      completed: json['completed'] as int,
+      failed: json['failed'] as int,
+    );
+
+Map<String, dynamic> _$$BatchRequestCountsImplToJson(
+        _$BatchRequestCountsImpl instance) =>
+    <String, dynamic>{
+      'total': instance.total,
+      'completed': instance.completed,
+      'failed': instance.failed,
+    };
+
+_$BatchErrorsDataInnerImpl _$$BatchErrorsDataInnerImplFromJson(
+        Map<String, dynamic> json) =>
+    _$BatchErrorsDataInnerImpl(
+      code: json['code'] as String?,
+      message: json['message'] as String?,
+      param: json['param'] as String?,
+      line: json['line'] as int?,
+    );
+
+Map<String, dynamic> _$$BatchErrorsDataInnerImplToJson(
+    _$BatchErrorsDataInnerImpl instance) {
+  final val = <String, dynamic>{};
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('code', instance.code);
+  writeNotNull('message', instance.message);
+  writeNotNull('param', instance.param);
+  writeNotNull('line', instance.line);
+  return val;
+}
 
 _$ChatCompletionSystemMessageImpl _$$ChatCompletionSystemMessageImplFromJson(
         Map<String, dynamic> json) =>

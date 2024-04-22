@@ -43,6 +43,40 @@ class CreateRunRequest with _$CreateRunRequest {
     /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
     @JsonKey(includeIfNull: false) @Default(1.0) double? temperature,
 
+    /// An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+    ///
+    /// We generally recommend altering this or temperature but not both.
+    @JsonKey(name: 'top_p', includeIfNull: false) @Default(1.0) double? topP,
+
+    /// The maximum number of prompt tokens that may be used over the course of the run. The run will make a best effort to use only the number of prompt tokens specified, across multiple turns of the run. If the run exceeds the number of prompt tokens specified, the run will end with status `complete`. See `incomplete_details` for more info.
+    @JsonKey(name: 'max_prompt_tokens', includeIfNull: false)
+    int? maxPromptTokens,
+
+    /// The maximum number of completion tokens that may be used over the course of the run. The run will make a best effort to use only the number of completion tokens specified, across multiple turns of the run. If the run exceeds the number of completion tokens specified, the run will end with status `complete`. See `incomplete_details` for more info.
+    @JsonKey(name: 'max_completion_tokens', includeIfNull: false)
+    int? maxCompletionTokens,
+
+    /// Thread truncation controls
+    @JsonKey(name: 'truncation_strategy', includeIfNull: false)
+    TruncationObject? truncationStrategy,
+
+    /// Controls which (if any) tool is called by the model.
+    /// `none` means the model will not call any tools and instead generates a message.
+    /// `auto` is the default value and means the model can pick between generating a message or calling a tool.
+    /// Specifying a particular tool like `{"type": "TOOL_TYPE"}` or `{"type": "function", "function": {"name": "my_function"}}` forces the model to call that tool.
+    @_CreateRunRequestToolChoiceConverter()
+    @JsonKey(name: 'tool_choice', includeIfNull: false)
+    CreateRunRequestToolChoice? toolChoice,
+
+    /// Specifies the format that the model must output. Compatible with [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+    ///
+    /// Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON.
+    ///
+    /// **Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if `finish_reason="length"`, which indicates the generation exceeded `max_tokens` or the conversation exceeded the max context length.
+    @_CreateRunRequestResponseFormatConverter()
+    @JsonKey(name: 'response_format', includeIfNull: false)
+    CreateRunRequestResponseFormat? responseFormat,
+
     /// If `true`, returns a stream of events that happen during the Run as server-sent events, terminating when the Run enters a terminal state with a `data: [DONE]` message.
     @JsonKey(includeIfNull: false) bool? stream,
   }) = _CreateRunRequest;
@@ -61,6 +95,12 @@ class CreateRunRequest with _$CreateRunRequest {
     'tools',
     'metadata',
     'temperature',
+    'top_p',
+    'max_prompt_tokens',
+    'max_completion_tokens',
+    'truncation_strategy',
+    'tool_choice',
+    'response_format',
     'stream'
   ];
 
@@ -68,6 +108,11 @@ class CreateRunRequest with _$CreateRunRequest {
   static const temperatureDefaultValue = 1.0;
   static const temperatureMinValue = 0.0;
   static const temperatureMaxValue = 2.0;
+  static const topPDefaultValue = 1.0;
+  static const topPMinValue = 0.0;
+  static const topPMaxValue = 1.0;
+  static const maxPromptTokensMinValue = 256;
+  static const maxCompletionTokensMinValue = 256;
 
   /// Perform validations on the schema property values
   String? validateSchema() {
@@ -76,6 +121,19 @@ class CreateRunRequest with _$CreateRunRequest {
     }
     if (temperature != null && temperature! > temperatureMaxValue) {
       return "The value of 'temperature' cannot be > $temperatureMaxValue";
+    }
+    if (topP != null && topP! < topPMinValue) {
+      return "The value of 'topP' cannot be < $topPMinValue";
+    }
+    if (topP != null && topP! > topPMaxValue) {
+      return "The value of 'topP' cannot be > $topPMaxValue";
+    }
+    if (maxPromptTokens != null && maxPromptTokens! < maxPromptTokensMinValue) {
+      return "The value of 'maxPromptTokens' cannot be < $maxPromptTokensMinValue";
+    }
+    if (maxCompletionTokens != null &&
+        maxCompletionTokens! < maxCompletionTokensMinValue) {
+      return "The value of 'maxCompletionTokens' cannot be < $maxCompletionTokensMinValue";
     }
     return null;
   }
@@ -91,6 +149,12 @@ class CreateRunRequest with _$CreateRunRequest {
       'tools': tools,
       'metadata': metadata,
       'temperature': temperature,
+      'top_p': topP,
+      'max_prompt_tokens': maxPromptTokens,
+      'max_completion_tokens': maxCompletionTokens,
+      'truncation_strategy': truncationStrategy,
+      'tool_choice': toolChoice,
+      'response_format': responseFormat,
       'stream': stream,
     };
   }
@@ -195,6 +259,172 @@ class _CreateRunRequestModelConverter
       CreateRunRequestModelEnumeration(value: final v) =>
         _$RunModelsEnumMap[v]!,
       CreateRunRequestModelString(value: final v) => v,
+      null => null,
+    };
+  }
+}
+
+// ==========================================
+// ENUM: CreateRunRequestToolChoiceMode
+// ==========================================
+
+/// `none` means the model will not call a function and instead generates a message. `auto` means the model can pick between generating a message or calling a function.
+enum CreateRunRequestToolChoiceMode {
+  @JsonValue('none')
+  none,
+  @JsonValue('auto')
+  auto,
+}
+
+// ==========================================
+// CLASS: CreateRunRequestToolChoice
+// ==========================================
+
+/// Controls which (if any) tool is called by the model.
+/// `none` means the model will not call any tools and instead generates a message.
+/// `auto` is the default value and means the model can pick between generating a message or calling a tool.
+/// Specifying a particular tool like `{"type": "TOOL_TYPE"}` or `{"type": "function", "function": {"name": "my_function"}}` forces the model to call that tool.
+@freezed
+sealed class CreateRunRequestToolChoice with _$CreateRunRequestToolChoice {
+  const CreateRunRequestToolChoice._();
+
+  /// `none` means the model will not call a function and instead generates a message. `auto` means the model can pick between generating a message or calling a function.
+  const factory CreateRunRequestToolChoice.mode(
+    CreateRunRequestToolChoiceMode value,
+  ) = CreateRunRequestToolChoiceEnumeration;
+
+  /// No Description
+  const factory CreateRunRequestToolChoice.tool(
+    AssistantsNamedToolChoice value,
+  ) = CreateRunRequestToolChoiceAssistantsNamedToolChoice;
+
+  /// Object construction from a JSON representation
+  factory CreateRunRequestToolChoice.fromJson(Map<String, dynamic> json) =>
+      _$CreateRunRequestToolChoiceFromJson(json);
+}
+
+/// Custom JSON converter for [CreateRunRequestToolChoice]
+class _CreateRunRequestToolChoiceConverter
+    implements JsonConverter<CreateRunRequestToolChoice?, Object?> {
+  const _CreateRunRequestToolChoiceConverter();
+
+  @override
+  CreateRunRequestToolChoice? fromJson(Object? data) {
+    if (data == null) {
+      return null;
+    }
+    if (data is String &&
+        _$CreateRunRequestToolChoiceModeEnumMap.values.contains(data)) {
+      return CreateRunRequestToolChoiceEnumeration(
+        _$CreateRunRequestToolChoiceModeEnumMap.keys.elementAt(
+          _$CreateRunRequestToolChoiceModeEnumMap.values.toList().indexOf(data),
+        ),
+      );
+    }
+    if (data is Map<String, dynamic>) {
+      try {
+        return CreateRunRequestToolChoiceAssistantsNamedToolChoice(
+          AssistantsNamedToolChoice.fromJson(data),
+        );
+      } catch (e) {}
+    }
+    throw Exception(
+      'Unexpected value for CreateRunRequestToolChoice: $data',
+    );
+  }
+
+  @override
+  Object? toJson(CreateRunRequestToolChoice? data) {
+    return switch (data) {
+      CreateRunRequestToolChoiceEnumeration(value: final v) =>
+        _$CreateRunRequestToolChoiceModeEnumMap[v]!,
+      CreateRunRequestToolChoiceAssistantsNamedToolChoice(value: final v) =>
+        v.toJson(),
+      null => null,
+    };
+  }
+}
+
+// ==========================================
+// ENUM: CreateRunRequestResponseFormatMode
+// ==========================================
+
+/// `auto` is the default value
+enum CreateRunRequestResponseFormatMode {
+  @JsonValue('none')
+  none,
+  @JsonValue('auto')
+  auto,
+}
+
+// ==========================================
+// CLASS: CreateRunRequestResponseFormat
+// ==========================================
+
+/// Specifies the format that the model must output. Compatible with [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+///
+/// Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON.
+///
+/// **Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if `finish_reason="length"`, which indicates the generation exceeded `max_tokens` or the conversation exceeded the max context length.
+@freezed
+sealed class CreateRunRequestResponseFormat
+    with _$CreateRunRequestResponseFormat {
+  const CreateRunRequestResponseFormat._();
+
+  /// `auto` is the default value
+  const factory CreateRunRequestResponseFormat.mode(
+    CreateRunRequestResponseFormatMode value,
+  ) = CreateRunRequestResponseFormatEnumeration;
+
+  /// No Description
+  const factory CreateRunRequestResponseFormat.format(
+    AssistantsResponseFormat value,
+  ) = CreateRunRequestResponseFormatAssistantsResponseFormat;
+
+  /// Object construction from a JSON representation
+  factory CreateRunRequestResponseFormat.fromJson(Map<String, dynamic> json) =>
+      _$CreateRunRequestResponseFormatFromJson(json);
+}
+
+/// Custom JSON converter for [CreateRunRequestResponseFormat]
+class _CreateRunRequestResponseFormatConverter
+    implements JsonConverter<CreateRunRequestResponseFormat?, Object?> {
+  const _CreateRunRequestResponseFormatConverter();
+
+  @override
+  CreateRunRequestResponseFormat? fromJson(Object? data) {
+    if (data == null) {
+      return null;
+    }
+    if (data is String &&
+        _$CreateRunRequestResponseFormatModeEnumMap.values.contains(data)) {
+      return CreateRunRequestResponseFormatEnumeration(
+        _$CreateRunRequestResponseFormatModeEnumMap.keys.elementAt(
+          _$CreateRunRequestResponseFormatModeEnumMap.values
+              .toList()
+              .indexOf(data),
+        ),
+      );
+    }
+    if (data is Map<String, dynamic>) {
+      try {
+        return CreateRunRequestResponseFormatAssistantsResponseFormat(
+          AssistantsResponseFormat.fromJson(data),
+        );
+      } catch (e) {}
+    }
+    throw Exception(
+      'Unexpected value for CreateRunRequestResponseFormat: $data',
+    );
+  }
+
+  @override
+  Object? toJson(CreateRunRequestResponseFormat? data) {
+    return switch (data) {
+      CreateRunRequestResponseFormatEnumeration(value: final v) =>
+        _$CreateRunRequestResponseFormatModeEnumMap[v]!,
+      CreateRunRequestResponseFormatAssistantsResponseFormat(value: final v) =>
+        v.toJson(),
       null => null,
     };
   }

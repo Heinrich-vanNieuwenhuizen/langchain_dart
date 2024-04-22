@@ -55,6 +55,10 @@ class RunObject with _$RunObject {
     /// The Unix timestamp (in seconds) for when the run was completed.
     @JsonKey(name: 'completed_at') required int? completedAt,
 
+    /// Details on why the run is incomplete. Will be `null` if the run is not incomplete.
+    @JsonKey(name: 'incomplete_details')
+    required RunObjectIncompleteDetails? incompleteDetails,
+
     /// The model that the [assistant](https://platform.openai.com/docs/api-reference/assistants) used for this run.
     required String model,
 
@@ -75,6 +79,36 @@ class RunObject with _$RunObject {
 
     /// The sampling temperature used for this run. If not set, defaults to 1.
     @JsonKey(includeIfNull: false) double? temperature,
+
+    /// The nucleus sampling value used for this run. If not set, defaults to 1.
+    @JsonKey(name: 'top_p', includeIfNull: false) double? topP,
+
+    /// The maximum number of prompt tokens specified to have been used over the course of the run.
+    @JsonKey(name: 'max_prompt_tokens') required int? maxPromptTokens,
+
+    /// The maximum number of completion tokens specified to have been used over the course of the run.
+    @JsonKey(name: 'max_completion_tokens') required int? maxCompletionTokens,
+
+    /// Thread truncation controls
+    @JsonKey(name: 'truncation_strategy')
+    required TruncationObject? truncationStrategy,
+
+    /// Controls which (if any) tool is called by the model.
+    /// `none` means the model will not call any tools and instead generates a message.
+    /// `auto` is the default value and means the model can pick between generating a message or calling a tool.
+    /// Specifying a particular tool like `{"type": "TOOL_TYPE"}` or `{"type": "function", "function": {"name": "my_function"}}` forces the model to call that tool.
+    @_RunObjectToolChoiceConverter()
+    @JsonKey(name: 'tool_choice')
+    required RunObjectToolChoice? toolChoice,
+
+    /// Specifies the format that the model must output. Compatible with [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+    ///
+    /// Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON.
+    ///
+    /// **Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if `finish_reason="length"`, which indicates the generation exceeded `max_tokens` or the conversation exceeded the max context length.
+    @_RunObjectResponseFormatConverter()
+    @JsonKey(name: 'response_format')
+    required RunObjectResponseFormat responseFormat,
   }) = _RunObject;
 
   /// Object construction from a JSON representation
@@ -96,17 +130,35 @@ class RunObject with _$RunObject {
     'cancelled_at',
     'failed_at',
     'completed_at',
+    'incomplete_details',
     'model',
     'instructions',
     'tools',
     'file_ids',
     'metadata',
     'usage',
-    'temperature'
+    'temperature',
+    'top_p',
+    'max_prompt_tokens',
+    'max_completion_tokens',
+    'truncation_strategy',
+    'tool_choice',
+    'response_format'
   ];
+
+  /// Validation constants
+  static const maxPromptTokensMinValue = 256;
+  static const maxCompletionTokensMinValue = 256;
 
   /// Perform validations on the schema property values
   String? validateSchema() {
+    if (maxPromptTokens != null && maxPromptTokens! < maxPromptTokensMinValue) {
+      return "The value of 'maxPromptTokens' cannot be < $maxPromptTokensMinValue";
+    }
+    if (maxCompletionTokens != null &&
+        maxCompletionTokens! < maxCompletionTokensMinValue) {
+      return "The value of 'maxCompletionTokens' cannot be < $maxCompletionTokensMinValue";
+    }
     return null;
   }
 
@@ -126,6 +178,7 @@ class RunObject with _$RunObject {
       'cancelled_at': cancelledAt,
       'failed_at': failedAt,
       'completed_at': completedAt,
+      'incomplete_details': incompleteDetails,
       'model': model,
       'instructions': instructions,
       'tools': tools,
@@ -133,6 +186,12 @@ class RunObject with _$RunObject {
       'metadata': metadata,
       'usage': usage,
       'temperature': temperature,
+      'top_p': topP,
+      'max_prompt_tokens': maxPromptTokens,
+      'max_completion_tokens': maxCompletionTokens,
+      'truncation_strategy': truncationStrategy,
+      'tool_choice': toolChoice,
+      'response_format': responseFormat,
     };
   }
 }
@@ -251,6 +310,200 @@ class RunLastError with _$RunLastError {
 }
 
 // ==========================================
+// CLASS: RunObjectIncompleteDetails
+// ==========================================
+
+/// Details on why the run is incomplete. Will be `null` if the run is not incomplete.
+@freezed
+class RunObjectIncompleteDetails with _$RunObjectIncompleteDetails {
+  const RunObjectIncompleteDetails._();
+
+  /// Factory constructor for RunObjectIncompleteDetails
+  const factory RunObjectIncompleteDetails({
+    /// The reason why the run is incomplete. This will point to which specific token limit was reached over the course of the run.
+    @JsonKey(
+      includeIfNull: false,
+      unknownEnumValue: JsonKey.nullForUndefinedEnumValue,
+    )
+    RunObjectIncompleteDetailsReason? reason,
+  }) = _RunObjectIncompleteDetails;
+
+  /// Object construction from a JSON representation
+  factory RunObjectIncompleteDetails.fromJson(Map<String, dynamic> json) =>
+      _$RunObjectIncompleteDetailsFromJson(json);
+
+  /// List of all property names of schema
+  static const List<String> propertyNames = ['reason'];
+
+  /// Perform validations on the schema property values
+  String? validateSchema() {
+    return null;
+  }
+
+  /// Map representation of object (not serialized)
+  Map<String, dynamic> toMap() {
+    return {
+      'reason': reason,
+    };
+  }
+}
+
+// ==========================================
+// ENUM: RunObjectToolChoiceMode
+// ==========================================
+
+/// `none` means the model will not call a function and instead generates a message. `auto` means the model can pick between generating a message or calling a function.
+enum RunObjectToolChoiceMode {
+  @JsonValue('none')
+  none,
+  @JsonValue('auto')
+  auto,
+}
+
+// ==========================================
+// CLASS: RunObjectToolChoice
+// ==========================================
+
+/// Controls which (if any) tool is called by the model.
+/// `none` means the model will not call any tools and instead generates a message.
+/// `auto` is the default value and means the model can pick between generating a message or calling a tool.
+/// Specifying a particular tool like `{"type": "TOOL_TYPE"}` or `{"type": "function", "function": {"name": "my_function"}}` forces the model to call that tool.
+@freezed
+sealed class RunObjectToolChoice with _$RunObjectToolChoice {
+  const RunObjectToolChoice._();
+
+  /// `none` means the model will not call a function and instead generates a message. `auto` means the model can pick between generating a message or calling a function.
+  const factory RunObjectToolChoice.mode(
+    RunObjectToolChoiceMode value,
+  ) = RunObjectToolChoiceEnumeration;
+
+  /// No Description
+  const factory RunObjectToolChoice.tool(
+    AssistantsNamedToolChoice value,
+  ) = RunObjectToolChoiceAssistantsNamedToolChoice;
+
+  /// Object construction from a JSON representation
+  factory RunObjectToolChoice.fromJson(Map<String, dynamic> json) =>
+      _$RunObjectToolChoiceFromJson(json);
+}
+
+/// Custom JSON converter for [RunObjectToolChoice]
+class _RunObjectToolChoiceConverter
+    implements JsonConverter<RunObjectToolChoice, Object?> {
+  const _RunObjectToolChoiceConverter();
+
+  @override
+  RunObjectToolChoice fromJson(Object? data) {
+    if (data is String &&
+        _$RunObjectToolChoiceModeEnumMap.values.contains(data)) {
+      return RunObjectToolChoiceEnumeration(
+        _$RunObjectToolChoiceModeEnumMap.keys.elementAt(
+          _$RunObjectToolChoiceModeEnumMap.values.toList().indexOf(data),
+        ),
+      );
+    }
+    if (data is Map<String, dynamic>) {
+      try {
+        return RunObjectToolChoiceAssistantsNamedToolChoice(
+          AssistantsNamedToolChoice.fromJson(data),
+        );
+      } catch (e) {}
+    }
+    throw Exception(
+      'Unexpected value for RunObjectToolChoice: $data',
+    );
+  }
+
+  @override
+  Object? toJson(RunObjectToolChoice data) {
+    return switch (data) {
+      RunObjectToolChoiceEnumeration(value: final v) =>
+        _$RunObjectToolChoiceModeEnumMap[v]!,
+      RunObjectToolChoiceAssistantsNamedToolChoice(value: final v) =>
+        v.toJson(),
+    };
+  }
+}
+
+// ==========================================
+// ENUM: RunObjectResponseFormatMode
+// ==========================================
+
+/// `auto` is the default value
+enum RunObjectResponseFormatMode {
+  @JsonValue('none')
+  none,
+  @JsonValue('auto')
+  auto,
+}
+
+// ==========================================
+// CLASS: RunObjectResponseFormat
+// ==========================================
+
+/// Specifies the format that the model must output. Compatible with [GPT-4 Turbo](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`.
+///
+/// Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON.
+///
+/// **Important:** when using JSON mode, you **must** also instruct the model to produce JSON yourself via a system or user message. Without this, the model may generate an unending stream of whitespace until the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request. Also note that the message content may be partially cut off if `finish_reason="length"`, which indicates the generation exceeded `max_tokens` or the conversation exceeded the max context length.
+@freezed
+sealed class RunObjectResponseFormat with _$RunObjectResponseFormat {
+  const RunObjectResponseFormat._();
+
+  /// `auto` is the default value
+  const factory RunObjectResponseFormat.mode(
+    RunObjectResponseFormatMode value,
+  ) = RunObjectResponseFormatEnumeration;
+
+  /// No Description
+  const factory RunObjectResponseFormat.format(
+    AssistantsResponseFormat value,
+  ) = RunObjectResponseFormatAssistantsResponseFormat;
+
+  /// Object construction from a JSON representation
+  factory RunObjectResponseFormat.fromJson(Map<String, dynamic> json) =>
+      _$RunObjectResponseFormatFromJson(json);
+}
+
+/// Custom JSON converter for [RunObjectResponseFormat]
+class _RunObjectResponseFormatConverter
+    implements JsonConverter<RunObjectResponseFormat, Object?> {
+  const _RunObjectResponseFormatConverter();
+
+  @override
+  RunObjectResponseFormat fromJson(Object? data) {
+    if (data is String &&
+        _$RunObjectResponseFormatModeEnumMap.values.contains(data)) {
+      return RunObjectResponseFormatEnumeration(
+        _$RunObjectResponseFormatModeEnumMap.keys.elementAt(
+          _$RunObjectResponseFormatModeEnumMap.values.toList().indexOf(data),
+        ),
+      );
+    }
+    if (data is Map<String, dynamic>) {
+      try {
+        return RunObjectResponseFormatAssistantsResponseFormat(
+          AssistantsResponseFormat.fromJson(data),
+        );
+      } catch (e) {}
+    }
+    throw Exception(
+      'Unexpected value for RunObjectResponseFormat: $data',
+    );
+  }
+
+  @override
+  Object? toJson(RunObjectResponseFormat data) {
+    return switch (data) {
+      RunObjectResponseFormatEnumeration(value: final v) =>
+        _$RunObjectResponseFormatModeEnumMap[v]!,
+      RunObjectResponseFormatAssistantsResponseFormat(value: final v) =>
+        v.toJson(),
+    };
+  }
+}
+
+// ==========================================
 // ENUM: RunRequiredActionType
 // ==========================================
 
@@ -307,4 +560,16 @@ enum RunLastErrorCode {
   rateLimitExceeded,
   @JsonValue('invalid_prompt')
   invalidPrompt,
+}
+
+// ==========================================
+// ENUM: RunObjectIncompleteDetailsReason
+// ==========================================
+
+/// The reason why the run is incomplete. This will point to which specific token limit was reached over the course of the run.
+enum RunObjectIncompleteDetailsReason {
+  @JsonValue('max_completion_tokens')
+  maxCompletionTokens,
+  @JsonValue('max_prompt_tokens')
+  maxPromptTokens,
 }
