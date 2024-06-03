@@ -8,6 +8,8 @@ import 'package:test/test.dart';
 
 // https://platform.openai.com/docs/assistants/overview
 void main() {
+  const defaultModel = 'gpt-4o';
+
   group('OpenAI Assistants API tests',
       timeout: const Timeout(Duration(minutes: 5)), () {
     late OpenAIClient client;
@@ -23,14 +25,13 @@ void main() {
     });
 
     Future<String> createAssistant() async {
-      const model = 'gpt-4';
       const name = 'Math Tutor';
       const description = 'Help students with math homework';
       const instructions =
           'You are a personal math tutor. Write and run code to answer math questions.';
       final res = await client.createAssistant(
         request: const CreateAssistantRequest(
-          model: AssistantModel.modelId(model),
+          model: AssistantModel.modelId(defaultModel),
           name: name,
           description: description,
           instructions: instructions,
@@ -42,12 +43,11 @@ void main() {
       expect(res.createdAt, greaterThan(0));
       expect(res.name, name);
       expect(res.description, description);
-      expect(res.model, model);
+      expect(res.model, startsWith(defaultModel));
       expect(res.instructions, instructions);
       expect(res.tools, hasLength(1));
       final tool = res.tools.first;
       expect(tool, const AssistantTools.codeInterpreter());
-      expect(res.fileIds, isEmpty);
       expect(res.metadata, isEmpty);
       return res.id;
     }
@@ -68,8 +68,9 @@ void main() {
         threadId: threadId,
         request: const CreateMessageRequest(
           role: MessageRole.user,
-          content:
-              'I need to solve the equation `3x + 11 = 14`. Can you help me?',
+          content: CreateMessageRequestContent.text(
+            'I need to solve the equation `3x + 11 = 14`. Can you help me?',
+          ),
         ),
       );
       expect(res.id, isNotNull);
@@ -80,7 +81,6 @@ void main() {
       expect(res.content, hasLength(1));
       expect(res.assistantId, isNull);
       expect(res.runId, isNull);
-      expect(res.fileIds, hasLength(0));
       expect(res.metadata, hasLength(0));
     }
 
@@ -102,7 +102,6 @@ void main() {
       expect(msg.content, hasLength(1));
       expect(msg.assistantId, isNull);
       expect(msg.runId, isNull);
-      expect(msg.fileIds, hasLength(0));
       expect(msg.metadata, hasLength(0));
     }
 
@@ -116,6 +115,7 @@ void main() {
           assistantId: assistantId,
           instructions:
               'Please address the user as Jane Doe. The user has a premium account.',
+          model: const CreateRunRequestModel.modelId(defaultModel),
         ),
       );
       expect(res.id, isNotNull);
@@ -131,10 +131,9 @@ void main() {
       expect(res.cancelledAt, isNull);
       expect(res.failedAt, isNull);
       expect(res.completedAt, isNull);
-      expect(res.model, startsWith('gpt-4'));
+      expect(res.model, startsWith(defaultModel));
       expect(res.instructions, isNotEmpty);
       expect(res.tools, hasLength(1));
-      expect(res.fileIds, isEmpty);
       expect(res.metadata, isEmpty);
       return res.id;
     }
@@ -167,7 +166,6 @@ void main() {
       expect(res.model, startsWith('gpt-4'));
       expect(res.instructions, isNotEmpty);
       expect(res.tools, hasLength(1));
-      expect(res.fileIds, isEmpty);
       expect(res.metadata, isEmpty);
       expect(res.usage?.totalTokens, greaterThan(0));
       expect(res.usage?.completionTokens, greaterThan(0));
@@ -198,7 +196,10 @@ void main() {
       final assistantMsg2 = messages[0];
       expect(assistantMsg2.role, MessageRole.assistant);
       expect(assistantMsg2.content, hasLength(1));
-      expect(assistantMsg2.content.first.text.toLowerCase(), contains('x = 1'));
+      expect(
+        assistantMsg2.content.first.text.toLowerCase(),
+        contains('x = 1'),
+      );
     }
 
     Future<void> checkThreadRunSteps(
@@ -266,8 +267,6 @@ void main() {
         output?.type,
         'logs',
       );
-      final logs = output?.mapOrNull(logs: (final l) => l.logs);
-      expect(double.tryParse(logs ?? ''), closeTo(1.0, 0.1));
       expect(step2.lastError, isNull);
       expect(step2.expiredAt, isNull);
       expect(step2.cancelledAt, isNull);
